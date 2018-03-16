@@ -152,6 +152,7 @@ public class Bookmark {
             for (Tag tag : bookmark.getTags()) {
                 if (tag.getTag().toLowerCase().contains(filter)) count += 1;
             }
+            //TODO: getTags().filter ... -> size() add this size to the counter
         }
 
         return count;
