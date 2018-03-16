@@ -1,39 +1,72 @@
 package model;
 
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.scene.paint.Color;
 
 public class Environment {
 
-    private SimpleIntegerProperty idEnv;
+    /**
+     * The list contains all Environments at runtime. Used for filtering.
+     */
+    private static ObservableList<Environment> environments = FXCollections.observableArrayList();
+    /**
+     * ID
+     */
+    private SimpleIntegerProperty id;
+    /**
+     * Name
+     */
     private SimpleStringProperty name;
+    /**
+     * Description
+     */
     private SimpleStringProperty desc;
-    private Color color;
+    /**
+     * Color
+     */
+    private ObjectProperty<Color> color;
 
+//    /**
+//     * Constructor with all required fields
+//     *
+//     * @param name Name
+//     * @param desc Description
+//     */
+//    public Environment(String name, String desc) {
+//        this.name = new SimpleStringProperty(name);
+//        this.desc = new SimpleStringProperty(desc);
+//    }
 
-    public Environment(SimpleStringProperty name, SimpleStringProperty desc) {
-        this.name = name;
-        this.desc = desc;
+    /**
+     * Constructor with all fields.
+     *
+     * @param id    ID
+     * @param name  Name
+     * @param desc  Description
+     * @param color Color
+     */
+    public Environment(int id, String name, String desc, Color color) {
+        this.id = new SimpleIntegerProperty(id);
+        this.name = new SimpleStringProperty(name);
+        this.desc = new SimpleStringProperty(desc);
+        this.color = new SimpleObjectProperty<>(color);
     }
 
-    public Environment(SimpleIntegerProperty idEnv, SimpleStringProperty name, SimpleStringProperty desc, Color color) {
-        this.idEnv = idEnv;
-        this.name = name;
-        this.desc = desc;
-        this.color = color;
+    public int getId() {
+        return id.get();
     }
 
-    public int getIdEnv() {
-        return idEnv.get();
+    public SimpleIntegerProperty idProperty() {
+        return id;
     }
 
-    public SimpleIntegerProperty idEnvProperty() {
-        return idEnv;
-    }
-
-    public void setIdEnv(int idEnv) {
-        this.idEnv.set(idEnv);
+    public void setId(int id) {
+        this.id.set(id);
     }
 
     public String getName() {
@@ -60,12 +93,25 @@ public class Environment {
         this.desc.set(desc);
     }
 
+    public static ObservableList<Environment> getEnvironments() {
+        return environments;
+    }
+
     public Color getColor() {
+        return color.get();
+    }
+
+    public ObjectProperty<Color> colorProperty() {
         return color;
     }
 
-
-    public void setColor(Color color) {
-        this.color = color;
+    @Override
+    public String toString() {
+        return "Environment{" +
+                "id=" + id +
+                ", name=" + name +
+                ", desc=" + desc +
+                ", color=" + color +
+                '}';
     }
 }

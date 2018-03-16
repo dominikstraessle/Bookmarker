@@ -8,22 +8,19 @@ import com.jfoenix.controls.JFXTextField;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.VBox;
 import model.Bookmark;
 
 public class SearchController {
-    /**
-     * Arraylist ist always filled with the Bookmarks matching the search keys.
-     */
-    private ObservableList<String> foundBookmarks = FXCollections.observableArrayList();
+
 
     @FXML
     private ResourceBundle resources;
@@ -41,7 +38,7 @@ public class SearchController {
     private JFXButton addBtnAdd;
 
     @FXML
-    private JFXListView<String> resultList;
+    private JFXListView<Bookmark> resultList;
 
     @FXML
     private ImageView detailImageIcon;
@@ -121,13 +118,51 @@ public class SearchController {
 
     }
 
-    @FXML
-    void initialize(URL url, ResourceBundle resourceBundle) {
-        resultList.setItems(foundBookmarks);//Binding
-        searchTxtKeyWords.textProperty().addListener(this::onSearchListener);
+    /**
+     * Constuctor is called before the {@link #initialize()}  method.
+     */
+    public SearchController() {
+
     }
 
-    private <T> void onSearchListener(ObservableValue<? extends T> observable, T oldValue, T newValue){
+    /**
+     * Initialize Method is called after the fxml is loaded.
+     */
+    @FXML
+    void initialize() {
+        resultList.itemsProperty().bind(Bookmark.resultPropertyProperty());//binds filter results to the listview
+        resultList.setCellFactory(this::cellFactoryList);//sets the lookalike of a cell in the listview
+        searchTxtKeyWords.textProperty().addListener(Bookmark::filter);//listener for filtering the bookmarks list with the given string
+    }
 
+    /**
+     * This represents the lookalike of a cell in the {@link #resultList}.
+     *
+     * @param list List
+     * @return the new ListCell
+     */
+    private ListCell<Bookmark> cellFactoryList(ListView<Bookmark> list) {
+        return new ListCell<Bookmark>() {
+
+            @Override
+            protected void updateItem(Bookmark bookmark, boolean empty) {
+                super.updateItem(bookmark, empty);
+                if (bookmark == null || empty) {
+                    setText(null);
+                    setGraphic(null);
+                } else {
+                    //TODO: https://www.billmann.de/2013/07/03/javafx-custom-listcell/
+                    setText(null);
+                    VBox vBox = new VBox();
+                    Label title = new Label(bookmark.getTitle());
+                    title.setStyle("-fx-font-weight: bold");
+                    Label desc = new Label(bookmark.getDesc());
+                    vBox.getChildren().addAll(title, desc);
+                    setGraphic(vBox);
+//                    setText(bookmark.getTitle() + ":\n" + bookmark.getDesc());
+                    System.out.println("changed");
+                }
+            }
+        };
     }
 }
