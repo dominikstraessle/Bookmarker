@@ -1,13 +1,5 @@
 package model;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -15,6 +7,10 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toMap;
 
@@ -53,7 +49,6 @@ public class Bookmark {
     /**
      * URL
      */
-    //TODO: ObjectProperty<URL> ...
     private SimpleStringProperty url;
     /**
      * Date and Time when the bookmark was added
@@ -149,10 +144,12 @@ public class Bookmark {
             if (bookmark.getDesc().toLowerCase().contains(filter)) count += 1;
             if (bookmark.getEnvironment().getDesc().toLowerCase().contains(filter)) count += 1;
             if (bookmark.getEnvironment().getName().toLowerCase().contains(filter)) count += 1;
-            for (Tag tag : bookmark.getTags()) {
-                if (tag.getTag().toLowerCase().contains(filter)) count += 1;
-            }
-            //TODO: getTags().filter ... -> size() add this size to the counter
+//            for (Tag tag : bookmark.getTags()) {
+//                if (tag.getTag().toLowerCase().contains(filter)) count += 1;
+//            }//Replaced by the construct down here...
+            count += bookmark.getTags().stream()
+                    .filter(tag -> tag.getTag().toLowerCase().contains(filter))
+                    .count();
         }
 
         return count;
@@ -287,4 +284,12 @@ public class Bookmark {
         return resultProperty;
     }
 
+
+    /**
+     * Sets the {@link #bookmarks} list as the list of the {@link #resultProperty}.
+     * Method is used after loading all Bookmarks from the Database, to show all Bookmarks in the @{@link search.SearchController}s Listview.
+     */
+    public static void showAllBookmarks() {
+        Bookmark.resultProperty.set(bookmarks);//after all Bookmarks are loaded, the property is updated the first time
+    }
 }

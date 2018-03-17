@@ -1,13 +1,17 @@
 .blue_dark {
-	-fx-background-color: #1e74ff;
-	-fx-text-fill: #FFFFFF;
+    -fx-background-color: #1e74ff;
+    -fx-text-fill: #FFFFFF;
 }
 
 .blue_light {
-	-fx-background-color: #00d4ff;
+    -fx-background-color: #00d4ff;
 }
 
 .blue_ultra_light {
-	-fx-background-color: #ddf9ff;
+    -fx-background-color: #ddf9ff;
+}
+
+.bold_text {
+    -fx-font-weight: bold;
 }
 

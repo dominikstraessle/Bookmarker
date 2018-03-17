@@ -1,14 +1,15 @@
 package manage;
 
-import java.sql.SQLException;
-
 import database.DatabaseController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import model.Bookmark;
 import search.SearchController;
+
+import java.sql.SQLException;
 
 public class Manager extends Application {
 
@@ -29,7 +30,8 @@ public class Manager extends Application {
     }
 
     /**
-     * Loads all data from the database into the ArrayLists
+     * Loads all data from the database into the ArrayLists.
+     * Shows all Bookmarks in the @{@link SearchController}s Listview
      *
      * @throws SQLException Failed to load data
      */
@@ -37,6 +39,8 @@ public class Manager extends Application {
         Manager.getDatabaseController().consumerWrapper(Manager.getDatabaseController()::readTags);
         Manager.getDatabaseController().consumerWrapper(Manager.getDatabaseController()::readEnvironemnts);
         Manager.getDatabaseController().consumerWrapper(Manager.getDatabaseController()::readBookmarks);
+        Bookmark.showAllBookmarks();
+        //TODO: should i move this method calls into the static constructor of Bookmark class?
     }
 
     public static void main(String[] args) {

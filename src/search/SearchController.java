@@ -4,20 +4,17 @@ import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXComboBox;
 import com.jfoenix.controls.JFXListView;
 import com.jfoenix.controls.JFXTextField;
-
-import java.net.URL;
-import java.util.ResourceBundle;
-
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
-import javafx.scene.control.MenuButton;
-import javafx.scene.control.MenuItem;
+import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import model.Bookmark;
+import model.Tag;
+
+import java.net.URL;
+import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 public class SearchController {
 
@@ -125,6 +122,29 @@ public class SearchController {
 
     }
 
+    //TODO ajvafoc
+    private void showBookmarkDetails(Bookmark bookmark) {
+        if (bookmark != null) {
+            detailLblTitle.setText(bookmark.getTitle());
+            detailLblUrl.setText(bookmark.getUrl());
+            detailLblAdded.setText(bookmark.getAdded().toString());
+            detailLblDesc.setText(bookmark.getDesc());
+            detailLblEnv.setText(bookmark.getEnvironment().getName());
+            StringBuilder tags = new StringBuilder();
+            bookmark.getTags().forEach(tag -> tags.append(tag.getTag()).append(" "));
+            detailLblTags.setText(bookmark.getTags().stream()
+                    .map(Tag::getTag)//only the text of the tags in the list
+                    .collect(Collectors.joining(" ")));//collect to a string delimited by a blank
+        } else {
+            detailLblTitle.setText("");
+            detailLblUrl.setText("");
+            detailLblAdded.setText("");
+            detailLblDesc.setText("");
+            detailLblEnv.setText("");
+            detailLblTags.setText("");
+        }
+    }
+
     /**
      * Initialize Method is called after the fxml is loaded.
      */
@@ -133,6 +153,9 @@ public class SearchController {
         resultList.itemsProperty().bind(Bookmark.resultPropertyProperty());//binds filter results to the listview
         resultList.setCellFactory(this::cellFactoryList);//sets the lookalike of a cell in the listview
         searchTxtKeyWords.textProperty().addListener(Bookmark::filter);//listener for filtering the bookmarks list with the given string
+        resultList.getSelectionModel()
+                .selectedItemProperty()//get the selected item
+                .addListener((observable, oldValue, newValue) -> showBookmarkDetails(newValue));//show the details of the selected item.
     }
 
     /**
@@ -154,13 +177,19 @@ public class SearchController {
                     //TODO: https://www.billmann.de/2013/07/03/javafx-custom-listcell/
                     setText(null);
                     VBox vBox = new VBox();
-                    Label title = new Label(bookmark.getTitle());
-                    title.setStyle("-fx-font-weight: bold");
-                    Label desc = new Label(bookmark.getDesc());
+                    String bookmarkTitle = bookmark.getTitle();
+                    Label title = new Label(bookmarkTitle);
+                    //Make the title bold
+                    title.getStyleClass().add("bold_text");
+                    //Description String
+                    String bookmarkDesc = bookmark.getDesc();
+                    //if the String is longer than 70 then it will be shortened...
+                    //just an appereance nicety
+                    if (bookmarkDesc.length() > 70) bookmarkDesc = bookmarkDesc.substring(0, 70) + "...";
+                    Label desc = new Label(bookmarkDesc);
+
                     vBox.getChildren().addAll(title, desc);
                     setGraphic(vBox);
-//                    setText(bookmark.getTitle() + ":\n" + bookmark.getDesc());
-                    System.out.println("changed");
                 }
             }
         };
