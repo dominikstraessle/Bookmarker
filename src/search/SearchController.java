@@ -4,17 +4,22 @@ import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXComboBox;
 import com.jfoenix.controls.JFXListView;
 import com.jfoenix.controls.JFXTextField;
-import javafx.event.ActionEvent;
-import javafx.fxml.FXML;
-import javafx.scene.control.*;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.VBox;
-import model.Bookmark;
-import model.Tag;
 
 import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
+
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
+import javafx.scene.control.MenuButton;
+import javafx.scene.control.MenuItem;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.VBox;
+import model.Bookmark;
+import model.Tag;
 
 public class SearchController {
 
@@ -122,7 +127,13 @@ public class SearchController {
 
     }
 
-    //TODO ajvafoc
+
+    /**
+     * Shows the detail of the given Bookmark in the detail-view if the bookmark is present.
+     * Should be called when the user clicks on a result in the results list view
+     *
+     * @param bookmark Clicked Bookmark to show the details
+     */
     private void showBookmarkDetails(Bookmark bookmark) {
         if (bookmark != null) {
             detailLblTitle.setText(bookmark.getTitle());
@@ -130,12 +141,10 @@ public class SearchController {
             detailLblAdded.setText(bookmark.getAdded().toString());
             detailLblDesc.setText(bookmark.getDesc());
             detailLblEnv.setText(bookmark.getEnvironment().getName());
-            StringBuilder tags = new StringBuilder();
-            bookmark.getTags().forEach(tag -> tags.append(tag.getTag()).append(" "));
-            detailLblTags.setText(bookmark.getTags().stream()
+            detailLblTags.setText(bookmark.getTags().stream()//get all tags of a bookmark as stream
                     .map(Tag::getTag)//only the text of the tags in the list
                     .collect(Collectors.joining(" ")));//collect to a string delimited by a blank
-        } else {
+        } else {//the bookmark is a null reference, so set all detail labels to blank
             detailLblTitle.setText("");
             detailLblUrl.setText("");
             detailLblAdded.setText("");
@@ -185,7 +194,8 @@ public class SearchController {
                     String bookmarkDesc = bookmark.getDesc();
                     //if the String is longer than 70 then it will be shortened...
                     //just an appereance nicety
-                    if (bookmarkDesc.length() > 70) bookmarkDesc = bookmarkDesc.substring(0, 70) + "...";
+                    if (bookmarkDesc.length() > 70)
+                        bookmarkDesc = bookmarkDesc.substring(0, 70) + "...";
                     Label desc = new Label(bookmarkDesc);
 
                     vBox.getChildren().addAll(title, desc);

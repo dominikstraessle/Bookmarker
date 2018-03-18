@@ -111,7 +111,7 @@ public class Bookmark {
      * @param newValue Filter String
      */
     public static void filter(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-        if (newValue.length() > 100) return;
+        if (newValue.length() > 100) return;//TODO: do i require this?
         //only lowercase
         String searchString = newValue.toLowerCase();
         //Creates a ArrayList with all search keywords -> they are splitted by a blank.
@@ -124,7 +124,7 @@ public class Bookmark {
                 .sorted(Comparator.<Map.Entry<Bookmark, Integer>>comparingInt(Map.Entry::getValue).reversed())//sorts the map, the most matches will be at the top(reversed)
                 .map(Map.Entry::getKey)//maps the Map to an list
                 .collect(Collectors.toList()));//Collecting to a list
-        System.out.println(results.toString());
+//        System.out.println(results.toString());
         resultProperty.set(results);//refresh the resultproperty
     }
 
