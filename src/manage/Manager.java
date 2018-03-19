@@ -1,15 +1,20 @@
 package manage;
 
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.ResourceBundle;
+
+import add.AddBookmarkController;
 import database.DatabaseController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import model.Bookmark;
 import search.SearchController;
-
-import java.sql.SQLException;
 
 public class Manager extends Application {
 
@@ -18,15 +23,27 @@ public class Manager extends Application {
      */
     private static DatabaseController databaseController = new DatabaseController("res/data/data.sqlite");
 
+    private Stage primaryStage;
+
     @Override
     public void start(Stage primaryStage) throws Exception {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("../search/search.fxml"));
-        Parent root = loader.load();
-        root.getStylesheets().add("stylesheets/style.css");
-        SearchController searchController = loader.getController();
-        loadData();
-        primaryStage.setScene(new Scene(root));
-        primaryStage.show();
+        this.primaryStage = primaryStage;
+
+        showSearch();
+    }
+
+    private void showSearch() throws IOException, SQLException {
+        ResourceBundle resourceBundle = ResourceBundle.getBundle("strings/lang");//for internationalization
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("../search/search.fxml"), resourceBundle);
+        Parent root = loader.load();//load fxml
+        root.getStylesheets().add("stylesheets/style.css");//add stylesheet
+        SearchController searchController = loader.getController();//init controller
+        searchController.setManager(this);//reference manager
+        loadData();//load everything from the database into the model
+        this.primaryStage.getIcons().add(new Image("images/brand.png"));//add icon
+        this.primaryStage.setTitle(resourceBundle.getString("bookmarker"));
+        this.primaryStage.setScene(new Scene(root));
+        this.primaryStage.show();
     }
 
     /**
@@ -50,5 +67,29 @@ public class Manager extends Application {
 
     public static DatabaseController getDatabaseController() {
         return databaseController;
+    }
+
+    /**
+     * Shows the Dialog to add a bookmark.
+     */
+    public void showAddBookmark() throws IOException {
+        ResourceBundle resourceBundle = ResourceBundle.getBundle("strings/lang");//for internationalization
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("../add/addBookmark.fxml"), resourceBundle);
+        Parent parent = loader.load();
+        parent.getStylesheets().add("stylesheets/style.css");
+        AddBookmarkController controller = loader.getController();
+        controller.setManager(this);
+        Stage dialog = new Stage();
+        controller.setDialogStage(dialog);
+        dialog.setTitle(resourceBundle.getString("add"));
+        dialog.getIcons().add(new Image("images/brand.png"));
+        dialog.setScene(new Scene(parent));
+        dialog.initModality(Modality.WINDOW_MODAL);
+        dialog.initOwner(this.primaryStage);
+        dialog.showAndWait();
+    }
+
+    public Stage getPrimaryStage() {
+        return primaryStage;
     }
 }

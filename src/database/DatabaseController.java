@@ -35,7 +35,7 @@ public class DatabaseController extends AbstractDatabaseController {
     public void insert(Tag tag, Connection connection) throws SQLException {
         String SQL = "INSERT INTO tag(tag) VALUES(?)";
         PreparedStatement statement = connection.prepareStatement(SQL);
-        statement.setString(1, tag.getTag());
+        statement.setString(1, tag.getTagString());
         statement.executeUpdate();
     }
 
@@ -49,7 +49,7 @@ public class DatabaseController extends AbstractDatabaseController {
     public void insert(List<Tag> tags, Connection connection) throws SQLException {
         StringBuilder insertString = new StringBuilder();
         String SQL = "INSERT INTO tag(tag) VALUES(?)";
-        tags.forEach(tag -> insertString.append(SQL.replace("?", tag.getTag())));
+        tags.forEach(tag -> insertString.append(SQL.replace("?", tag.getTagString())));
         connection.createStatement().executeUpdate(insertString.toString());
         //alternative would be: but then i need to handle a exception inside the lambda, own implementation is too much effort
         //tags.forEach(tag -> insert(tag, connection ));

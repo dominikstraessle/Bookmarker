@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?><?import javafx.scene.control.Label?><?import javafx.scene.layout.HBox?><?import javafx.scene.layout.Region?><?import javafx.scene.layout.VBox?><?import javafx.scene.text.Font?><?import com.jfoenix.controls.JFXTextField?><?import com.jfoenix.controls.JFXComboBox?><?import com.jfoenix.controls.JFXTextArea?><?import com.jfoenix.controls.JFXButton?>
-<VBox prefHeight="300.0" prefWidth="500.0" spacing="10.0" xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="add.AddController">
+<VBox prefHeight="300.0" prefWidth="500.0" spacing="10.0" xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="add.AddBookmarkController">
    <children>
       <Label text="Add Bookmark">
          <font>

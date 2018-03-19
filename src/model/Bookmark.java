@@ -1,5 +1,12 @@
 package model;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Map;
+
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -8,10 +15,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
-
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
 public class Bookmark {
@@ -29,10 +33,6 @@ public class Bookmark {
      * This List contains all bookmarks at the runtime, it is used for filtering.
      */
     private static ObservableList<Bookmark> bookmarks = FXCollections.observableArrayList();
-    /**
-     * List with all filter strings.
-     */
-    private static ArrayList<String> filterCriteria;
 
     /**
      * ID
@@ -104,6 +104,7 @@ public class Bookmark {
     }
 
 
+
     /**
      * Filters the {@link #bookmarks} List with the search keywords.
      * Collects the results to {@link #results} and removes all entrys with no filter match
@@ -112,45 +113,47 @@ public class Bookmark {
      */
     public static void filter(ObservableValue<? extends String> observable, String oldValue, String newValue) {
         if (newValue.length() > 100) return;//TODO: do i require this?
-        //only lowercase
-        String searchString = newValue.toLowerCase();
+
         //Creates a ArrayList with all search keywords -> they are splitted by a blank.
-        Bookmark.filterCriteria = new ArrayList<>(Arrays.asList(searchString.split(" ")));
+        //converts the string to lowercase before
+        ArrayList<String> filterCriteria = new ArrayList<>(Arrays
+                .asList(newValue//the new filter string
+                        .toLowerCase()//make everything lowercase
+                        .split(" ")));//splits by blank
+
         //adds all bookmarks with the corresponding number of matches with the filter strings to a Map | bookmarks with no matches already removed.
         Bookmark.results = FXCollections.observableArrayList(Bookmark.bookmarks.stream()//stream of all bookmarks
-                .collect(toMap(Bookmark::getMe, Bookmark::filterBookmark))//Maps the values to a key<Bookmark> with the value of matches<Integer>
+                .collect(toMap(Bookmark::getMe, bookmark -> filterCriteria.stream()//Maps the values to a key<Bookmark> with the value of matches<Integer>
+                        .mapToInt(bookmark::countMatches)//counts the matches for every filter String
+                        .sum()))//summarize the value of all matches
                 .entrySet().stream()//new Stream of the entry set
                 .filter(bookmarkIntegerEntry -> bookmarkIntegerEntry.getValue() != 0)//removes all Values with no matches
                 .sorted(Comparator.<Map.Entry<Bookmark, Integer>>comparingInt(Map.Entry::getValue).reversed())//sorts the map, the most matches will be at the top(reversed)
-                .map(Map.Entry::getKey)//maps the Map to an list
-                .collect(Collectors.toList()));//Collecting to a list
-//        System.out.println(results.toString());
-        resultProperty.set(results);//refresh the resultproperty
+                .map(Map.Entry::getKey)//maps the Map to an list containing the key
+                .collect(toList()));//Collecting to a list
+
+        //update the resultProperty with the new results
+        Bookmark.resultProperty.set(Bookmark.results);//refresh the resultproperty
     }
 
     /**
-     * Returns the value of matches of the {@link #filterCriteria} Strings with the Object attributs
+     * Counts the matches with a given filter String
      *
-     * @param bookmark Object to filter
-     * @return Value of matches
+     * @param filter filter String
+     * @return count of the matches with the filter String.
      */
-    public static Integer filterBookmark(Bookmark bookmark) {
+    public int countMatches(String filter) {
         int count = 0;
 
-        //count the matches with every filter keyword
-        //TODO: Problem with NullPointer...?
-        for (String filter : Bookmark.filterCriteria) {
-            if (bookmark.getTitle().toLowerCase().contains(filter)) count += 1;
-            if (bookmark.getDesc().toLowerCase().contains(filter)) count += 1;
-            if (bookmark.getEnvironment().getDesc().toLowerCase().contains(filter)) count += 1;
-            if (bookmark.getEnvironment().getName().toLowerCase().contains(filter)) count += 1;
-//            for (Tag tag : bookmark.getTags()) {
-//                if (tag.getTag().toLowerCase().contains(filter)) count += 1;
-//            }//Replaced by the construct down here...
-            count += bookmark.getTags().stream()
-                    .filter(tag -> tag.getTag().toLowerCase().contains(filter))
-                    .count();
-        }
+        if (getTitle().toLowerCase().contains(filter)) count += 1;//title
+        if (getDesc().toLowerCase().contains(filter)) count += 1;//description
+        if (getEnvironment().getDesc().toLowerCase().contains(filter)) count += 1;//env description
+        if (getEnvironment().getName().toLowerCase().contains(filter)) count += 1;//env name
+
+        //count the number of matching tags
+        count += getTags().stream()//tags
+                .filter(tag -> tag.getTagString().toLowerCase().contains(filter))//only keeps the tags with a match
+                .count();//counts the number of matches
 
         return count;
     }

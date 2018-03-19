@@ -3,14 +3,17 @@ package search;
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXComboBox;
 import com.jfoenix.controls.JFXListView;
+import com.jfoenix.controls.JFXTextArea;
 import com.jfoenix.controls.JFXTextField;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
@@ -18,11 +21,17 @@ import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
+import javafx.scene.web.WebView;
+import manage.Manager;
 import model.Bookmark;
 import model.Tag;
 
 public class SearchController {
 
+    /**
+     * Reference to the Manager that initialized the controller
+     */
+    private Manager manager;
 
     @FXML
     private ResourceBundle resources;
@@ -37,7 +46,10 @@ public class SearchController {
     private JFXComboBox<?> searchComboEnv;
 
     @FXML
-    private JFXButton addBtnAdd;
+    private JFXButton addBtnAddBookmark;
+
+    @FXML
+    private JFXButton addBtnAddEnv;
 
     @FXML
     private JFXListView<Bookmark> resultList;
@@ -46,7 +58,7 @@ public class SearchController {
     private ImageView detailImageIcon;
 
     @FXML
-    private Label detailLblTitle;
+    private JFXTextField detailTxtTitle;
 
     @FXML
     private MenuButton detailMenuOptions;
@@ -61,19 +73,22 @@ public class SearchController {
     private MenuItem detailMenuSave;
 
     @FXML
-    private Label detailLblUrl;
+    private JFXTextField detailTxtUrl;
 
     @FXML
-    private Label detailLblAdded;
+    private JFXTextField detailTxtAdded;
 
     @FXML
-    private Label detailLblEnv;
+    private JFXTextField detailTxtEnv;
 
     @FXML
-    private Label detailLblTags;
+    private JFXTextField detailTxtTags;
 
     @FXML
-    private Label detailLblDesc;
+    private JFXTextArea detailTxtDesc;
+
+    @FXML
+    private WebView detailWebImage;
 
     @FXML
     private JFXButton detailBtnOpen;
@@ -90,8 +105,26 @@ public class SearchController {
     @FXML
     private Label statusTxtModify;
 
+    /**
+     * Open the Dialog to add a Bookmark.
+     * @param event Add-Button clicked.
+     */
     @FXML
-    void handleAdd(ActionEvent event) {
+    void handleAddBookmark(ActionEvent event) {
+        try {
+            manager.showAddBookmark();
+        } catch (IOException e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle(resources.getString("error"));
+            alert.setHeaderText(resources.getString("error.01"));
+            alert.setContentText(e.getMessage());
+            alert.initOwner(manager.getPrimaryStage());
+            alert.showAndWait();
+        }
+    }
+
+    @FXML
+    void handleAddEnv(ActionEvent event) {
 
     }
 
@@ -124,7 +157,6 @@ public class SearchController {
      * Constuctor is called before the {@link #initialize()}  method.
      */
     public SearchController() {
-
     }
 
 
@@ -136,21 +168,23 @@ public class SearchController {
      */
     private void showBookmarkDetails(Bookmark bookmark) {
         if (bookmark != null) {
-            detailLblTitle.setText(bookmark.getTitle());
-            detailLblUrl.setText(bookmark.getUrl());
-            detailLblAdded.setText(bookmark.getAdded().toString());
-            detailLblDesc.setText(bookmark.getDesc());
-            detailLblEnv.setText(bookmark.getEnvironment().getName());
-            detailLblTags.setText(bookmark.getTags().stream()//get all tags of a bookmark as stream
-                    .map(Tag::getTag)//only the text of the tags in the list
+            detailTxtTitle.setText(bookmark.getTitle());
+            detailTxtUrl.setText(bookmark.getUrl());
+            detailTxtAdded.setText(bookmark.getAdded().toString());
+            detailTxtDesc.setText(bookmark.getDesc());
+            detailTxtEnv.setText(bookmark.getEnvironment().getName());
+            detailTxtTags.setText(bookmark.getTags().stream()//get all tags of a bookmark as stream
+                    .map(Tag::getTagString)//only the text of the tags in the list
                     .collect(Collectors.joining(" ")));//collect to a string delimited by a blank
+            String googleFavIcon = "http://www.google.com/s2/favicons?domain_url=";//google api for loading favicon TODO: show favicon of url in the image/web view
+
         } else {//the bookmark is a null reference, so set all detail labels to blank
-            detailLblTitle.setText("");
-            detailLblUrl.setText("");
-            detailLblAdded.setText("");
-            detailLblDesc.setText("");
-            detailLblEnv.setText("");
-            detailLblTags.setText("");
+            detailTxtTitle.setText("");
+            detailTxtUrl.setText("");
+            detailTxtAdded.setText("");
+            detailTxtDesc.setText("");
+            detailTxtEnv.setText("");
+            detailTxtTags.setText("");
         }
     }
 
@@ -159,9 +193,16 @@ public class SearchController {
      */
     @FXML
     void initialize() {
-        resultList.itemsProperty().bind(Bookmark.resultPropertyProperty());//binds filter results to the listview
-        resultList.setCellFactory(this::cellFactoryList);//sets the lookalike of a cell in the listview
-        searchTxtKeyWords.textProperty().addListener(Bookmark::filter);//listener for filtering the bookmarks list with the given string
+        //binds filter results to the listview
+        resultList.itemsProperty().bind(Bookmark.resultPropertyProperty());
+
+        //sets the lookalike of a cell in the listview
+        resultList.setCellFactory(this::cellFactoryList);
+
+        //listener for filtering the bookmarks list with the given string
+        searchTxtKeyWords.textProperty().addListener(Bookmark::filter);
+
+        //shows the detail of the selected item
         resultList.getSelectionModel()
                 .selectedItemProperty()//get the selected item
                 .addListener((observable, oldValue, newValue) -> showBookmarkDetails(newValue));//show the details of the selected item.
@@ -203,5 +244,9 @@ public class SearchController {
                 }
             }
         };
+    }
+
+    public void setManager(Manager manager) {
+        this.manager = manager;
     }
 }
