@@ -74,9 +74,18 @@ public class Tag {
     }
 
 
-    //TODO javadoc
+    /**
+     * Used for adding new Tags of a new Bookmark.
+     * 1. String with all Tags blank separeted given as #text
+     * 2. The String is splitted and converted to lowercase
+     * 3. All duplicates are removed
+     * 4. Creates new Tag of every String
+     * 5. Checks if already a Tag with the same String exists and adds this to the List, else the new one will be added.
+     *
+     * @param text String with all Tags blank separeted.
+     * @return List with all references to the tags.
+     */
     public static List<Tag> add(String text) {
-
         return Arrays
                 .stream(text.toLowerCase().split(" "))//make lowercase and split by blank
                 .distinct()//delete duplicates
@@ -88,14 +97,21 @@ public class Tag {
                 .collect(Collectors.toList());
     }
 
-    //TODO javadoc
+
+    /**
+     * Adds the given Tag to the {@link #tags} list and returns it.
+     *
+     * @param tag Tag to add
+     * @return same like #tag
+     */
     private static Tag addAndReturn(Tag tag) {
         tags.add(tag);
         return tag;
     }
 
 
-    @Override//TODO
+    @Override
+//TODO comparing two SimpleStringProperties, how does it works, have i to change it to compare the contained strings or the property?
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Tag)) return false;

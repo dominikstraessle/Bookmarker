@@ -19,9 +19,9 @@ import search.SearchController;
 public class Manager extends Application {
 
     /**
-     * Static DatabaseController should be used by every component and there should be only one
+     * DatabaseController should be used by every component.
      */
-    private static DatabaseController databaseController = new DatabaseController("res/data/data.sqlite");
+    private DatabaseController databaseController = new DatabaseController("res/data/data.sqlite");
 
     private Stage primaryStage;
 
@@ -32,6 +32,7 @@ public class Manager extends Application {
         showSearch();
     }
 
+    //TODO: javadoc
     private void showSearch() throws IOException, SQLException {
         ResourceBundle resourceBundle = ResourceBundle.getBundle("strings/lang");//for internationalization
         FXMLLoader loader = new FXMLLoader(getClass().getResource("../search/search.fxml"), resourceBundle);
@@ -53,11 +54,16 @@ public class Manager extends Application {
      * @throws SQLException Failed to load data
      */
     private void loadData() throws SQLException {
-        Manager.getDatabaseController().consumerWrapper(Manager.getDatabaseController()::readTags);
-        Manager.getDatabaseController().consumerWrapper(Manager.getDatabaseController()::readEnvironemnts);
-        Manager.getDatabaseController().consumerWrapper(Manager.getDatabaseController()::readBookmarks);
+        databaseController.consumerWrapper(databaseController::readTags);
+        databaseController.consumerWrapper(databaseController::readEnvironemnts);
+        databaseController.consumerWrapper(databaseController::readBookmarks);
         Bookmark.showAllBookmarks();
         //TODO: should i move this method calls into the static constructor of Bookmark class?
+    }
+
+    //TODO javadoc
+    private void writeData() throws SQLException {
+        databaseController.consumerWrapper(databaseController::writeAll);
     }
 
     public static void main(String[] args) {
@@ -65,7 +71,7 @@ public class Manager extends Application {
     }
 
 
-    public static DatabaseController getDatabaseController() {
+    public DatabaseController getDatabaseController() {
         return databaseController;
     }
 

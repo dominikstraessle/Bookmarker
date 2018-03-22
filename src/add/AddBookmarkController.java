@@ -59,8 +59,15 @@ public class AddBookmarkController {
     @FXML
     private JFXButton addBtnAdd;
 
+    /**
+     * Eventhandler for {@link #addBtnAdd}. When the Button is clicked, it checks if the information is complete.
+     * Then it creates a new Bookmark with the given information.
+     * For adding the correct references of @{@link Tag} to the bookmark it uses the Tag.add Method.
+     * Then the Bookmark will be added to the Bookmark list and the stage closed.
+     *
+     * @param event Button clicked event.
+     */
     @FXML
-//TODO javadoc
     void handleAdd(ActionEvent event) {
         if (checkFields()) {
             String title = addTxtTitle.getText();
@@ -74,7 +81,12 @@ public class AddBookmarkController {
         }
     }
 
-    //TODO javadoc
+
+    /**
+     * Checks if all required fields are filled.
+     *
+     * @return true if all required fiels are filled, else false.
+     */
     private boolean checkFields() {
         boolean ok = true;
         if (addTxtUrl.getText().equals("")) ok = false;//url

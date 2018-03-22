@@ -1,10 +1,12 @@
 package database;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -40,15 +42,89 @@ public class DatabaseController extends AbstractDatabaseController {
     }
 
     /**
+     * Inserts a single environment into the database
+     *
+     * @param environment Environment to insert
+     * @param connection  connection to the Databse
+     * @throws SQLException Insert went wrong
+     */
+    public void insert(Environment environment, Connection connection) throws SQLException {
+        String SQL = "INSERT INTO environment(name, description, color) VALUES(?,?,?)";
+        PreparedStatement statement = connection.prepareStatement(SQL);
+        statement.setString(1, environment.getName());
+        statement.setString(2, environment.getDesc());
+        statement.setString(3, environment.getColor().toString());
+        statement.executeUpdate();
+    }
+
+    /**
+     * Inserts a List of Environments into the database
+     *
+     * @param environments Environments to insert
+     * @param connection   connection to Database
+     * @throws SQLException Insert went wrong
+     */
+    public void insertEnvironments(List<Environment> environments, Connection connection) throws SQLException {
+        StringBuilder insertString = new StringBuilder();
+        String SQL = "INSERT INTO environment(name, description, color) VALUES(%s,%s,%s);\n";
+        environments.forEach(environment -> {
+            insertString.append(String.format(SQL,
+                    environment.getName(),
+                    environment.getDesc(),
+                    environment.getColor()));
+        });
+        connection.createStatement().executeUpdate(insertString.toString());
+    }
+
+    /**
+     * Inserts a single bookmark into the database
+     *
+     * @param bookmark   Bookmark to insert
+     * @param connection connection to Database
+     * @throws SQLException Insert went wrong
+     */
+    public void insert(Bookmark bookmark, Connection connection) throws SQLException {
+        String SQL = "INSERT INTO bookmark(title, url, added, description, environment) VALUES(?,?,?,?,?);";
+        PreparedStatement statement = connection.prepareStatement(SQL);
+        statement.setString(1, bookmark.getTitle());
+        statement.setString(2, bookmark.getUrl());
+        statement.setDate(3, (Date) Date.from(bookmark.getAdded().atZone(ZoneId.systemDefault()).toInstant()));
+        statement.setString(4, bookmark.getDesc());
+        statement.setInt(5, bookmark.getEnvironment().getId());
+        statement.executeUpdate();
+    }
+
+    /**
+     * Insert a list of Bookmarks into the database
+     *
+     * @param bookmarks  List of Bookmarks
+     * @param connection connection to Database
+     * @throws SQLException Insert went wrong
+     */
+    public void insertBookmarks(List<Bookmark> bookmarks, Connection connection) throws SQLException {
+        StringBuilder insertString = new StringBuilder();
+        String SQL = "INSERT INTO bookmark(title, url, added, description, environment) VALUES(%s,%s,%s,%s,%s);\n";
+        bookmarks.forEach(bookmark -> {
+            insertString.append(String.format(SQL,
+                    bookmark.getTitle(),
+                    bookmark.getUrl(),
+                    Date.from(bookmark.getAdded().atZone(ZoneId.systemDefault()).toInstant()).toString(),
+                    bookmark.getDesc(),
+                    bookmark.getEnvironment()));
+        });
+        connection.createStatement().executeUpdate(insertString.toString());
+    }
+
+    /**
      * Insert a list of Tags into the database.
      *
      * @param tags       List of Tags
      * @param connection Connection to the Database
      * @throws SQLException Insert went wrong
      */
-    public void insert(List<Tag> tags, Connection connection) throws SQLException {
+    public void insertTags(List<Tag> tags, Connection connection) throws SQLException {
         StringBuilder insertString = new StringBuilder();
-        String SQL = "INSERT INTO tag(tag) VALUES(?)";
+        String SQL = "INSERT INTO tag(tag) VALUES(?);\n";
         tags.forEach(tag -> insertString.append(SQL.replace("?", tag.getTagString())));
         connection.createStatement().executeUpdate(insertString.toString());
         //alternative would be: but then i need to handle a exception inside the lambda, own implementation is too much effort
@@ -177,12 +253,27 @@ public class DatabaseController extends AbstractDatabaseController {
         while (setTags.next()) {
             tagIDs.add(setTags.getInt("idtag"));
         }
-
+//TODO comments
         return tagIDs.stream()
                 .map(integer -> Tag.getTags().stream()
                         .filter(tag -> tag.getId() == integer)
                         .findFirst().orElse(new Tag(0, "")))
                 .collect(Collectors.toList());
+    }
+
+    //TODO insert all new elements, but  with the correct id's
+    public void writeAll(Connection connection) throws SQLException {
+        insertTags(Tag.getTags().filtered(tag -> tag.getId() == -1), connection);
+        insertEnvironments(Environment.getEnvironments().filtered(env -> env.getId() == -1), connection);
+        setIdTags(connection);
+//        readEnvironemnts(connection);
+//        readTags(connection);
+        //TODO after the id's are added to the lists, the bookmarks can be added
+        insertBookmarks(Bookmark.getBookmarks().filtered(bookmark -> bookmark.getId() == -1), connection);
+    }
+
+    //TODO the id's of the new Tags and Evnironments should be added to the Objects in the corresponding lists
+    private void setIdTags(Connection connection) {
     }
 }
 
