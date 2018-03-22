@@ -1,5 +1,6 @@
 package model;
 
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,6 +15,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import manage.Manager;
 
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
@@ -33,6 +35,10 @@ public class Bookmark {
      * This List contains all bookmarks at the runtime, it is used for filtering.
      */
     private static ObservableList<Bookmark> bookmarks = FXCollections.observableArrayList();
+    /**
+     * This List contains all bookmarks at the runtime, it is used for filtering.
+     */
+    private static ObservableList<Bookmark> searchBookmarks = FXCollections.observableArrayList();
 
     /**
      * ID
@@ -62,6 +68,10 @@ public class Bookmark {
      * All corresponding tags
      */
     private ObservableList<Tag> tags = FXCollections.observableArrayList();
+    /**
+     * True if the Bookmark is modified/new
+     */
+    private boolean modified = false;
 
     /**
      * Constuctor with all fields
@@ -104,7 +114,6 @@ public class Bookmark {
     }
 
 
-
     /**
      * Filters the {@link #bookmarks} List with the search keywords.
      * Collects the results to {@link #results} and removes all entrys with no filter match
@@ -122,7 +131,7 @@ public class Bookmark {
                         .split(" ")));//splits by blank
 
         //adds all bookmarks with the corresponding number of matches with the filter strings to a Map | bookmarks with no matches already removed.
-        Bookmark.results = FXCollections.observableArrayList(Bookmark.bookmarks.stream()//stream of all bookmarks
+        Bookmark.results = FXCollections.observableArrayList(Bookmark.searchBookmarks.stream()//stream of all bookmarks
                 .collect(toMap(Bookmark::getMe, bookmark -> filterCriteria.stream()//Maps the values to a key<Bookmark> with the value of matches<Integer>
                         .mapToInt(bookmark::countMatches)//counts the matches for every filter String
                         .sum()))//summarize the value of all matches
@@ -292,7 +301,44 @@ public class Bookmark {
      * Sets the {@link #bookmarks} list as the list of the {@link #resultProperty}.
      * Method is used after loading all Bookmarks from the Database, to show all Bookmarks in the @{@link search.SearchController}s Listview.
      */
-    public static void showAllBookmarks() {
+    public static void refreshBookmarksResultsProperty() {
         Bookmark.resultProperty.set(bookmarks);//after all Bookmarks are loaded, the property is updated the first time
+    }
+
+    /**
+     * Used for adding a new Bookmark to the list of Bookmarks
+     *
+     * @param bookmark bookmark to add
+     */
+    public static void add(Bookmark bookmark) throws SQLException {
+        Manager.getDatabaseController().consumerWrapper(bookmark, Manager.getDatabaseController()::insert);
+        bookmarks.add(bookmark);
+    }
+
+    /**
+     * Returns the next ID to use.
+     *
+     * @return Next ID
+     */
+    public static int getNewID() {
+        return bookmarks.stream()
+                .mapToInt(Bookmark::getId)//map to all ID's
+                .max()//get the highest ID
+                .orElse(0) + 1;//add 1 to the highest id, if there is no ID at all, creates a new one from 0
+    }
+
+    //TODO javadoc + comments
+    public static void changeSearchList(ObservableValue<? extends Environment> observable, Environment oldValue, Environment newValue) {
+        if (newValue == null) {
+            searchBookmarks = bookmarks;
+            System.out.println("null");
+        } else {
+            System.out.println(newValue);
+            searchBookmarks = bookmarks.filtered(bookmark -> bookmark.getEnvironment() == newValue);
+            System.out.println(searchBookmarks);
+        }
+        results = searchBookmarks;
+        resultProperty.set(results);
+        //TODO: filter string clearen? wenn umgebung gewechselt?
     }
 }

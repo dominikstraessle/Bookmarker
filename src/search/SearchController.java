@@ -8,12 +8,13 @@ import com.jfoenix.controls.JFXTextField;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
@@ -24,6 +25,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.web.WebView;
 import manage.Manager;
 import model.Bookmark;
+import model.Environment;
 import model.Tag;
 
 public class SearchController {
@@ -43,7 +45,7 @@ public class SearchController {
     private JFXTextField searchTxtKeyWords;
 
     @FXML
-    private JFXComboBox<?> searchComboEnv;
+    private JFXComboBox<Environment> searchComboEnv;
 
     @FXML
     private JFXButton addBtnAddBookmark;
@@ -107,6 +109,7 @@ public class SearchController {
 
     /**
      * Open the Dialog to add a Bookmark.
+     *
      * @param event Add-Button clicked.
      */
     @FXML
@@ -114,18 +117,17 @@ public class SearchController {
         try {
             manager.showAddBookmark();
         } catch (IOException e) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle(resources.getString("error"));
-            alert.setHeaderText(resources.getString("error.01"));
-            alert.setContentText(e.getMessage());
-            alert.initOwner(manager.getPrimaryStage());
-            alert.showAndWait();
+            Manager.alertException(resources.getString("error"), resources.getString("error.01"), Arrays.toString(e.getStackTrace()), manager.getPrimaryStage(), e, Level.SEVERE);
         }
     }
 
     @FXML
     void handleAddEnv(ActionEvent event) {
-
+        try {
+            manager.showAddEnvironment();
+        } catch (IOException e) {
+            Manager.alertException(resources.getString("error"), resources.getString("error.01"), Arrays.toString(e.getStackTrace()), manager.getPrimaryStage(), e, Level.SEVERE);
+        }
     }
 
     @FXML
@@ -206,6 +208,11 @@ public class SearchController {
         resultList.getSelectionModel()
                 .selectedItemProperty()//get the selected item
                 .addListener((observable, oldValue, newValue) -> showBookmarkDetails(newValue));//show the details of the selected item.
+
+        //binds the environments to the searchComboBox
+        searchComboEnv.itemsProperty().bind(Environment.environmentsPropertyProperty());
+        //When a new Environment is selected, then the search list will only be such elements, where the environment equals the selected environment
+        searchComboEnv.getSelectionModel().selectedItemProperty().addListener(Bookmark::changeSearchList);
     }
 
     /**
@@ -224,7 +231,7 @@ public class SearchController {
                     setText(null);
                     setGraphic(null);
                 } else {
-                    //TODO: https://www.billmann.de/2013/07/03/javafx-custom-listcell/
+                    //https://www.billmann.de/2013/07/03/javafx-custom-listcell/
                     setText(null);
                     VBox vBox = new VBox();
                     String bookmarkTitle = bookmark.getTitle();
@@ -248,5 +255,10 @@ public class SearchController {
 
     public void setManager(Manager manager) {
         this.manager = manager;
+    }
+
+    @FXML
+    public void handleReset(ActionEvent actionEvent) {
+        searchComboEnv.getSelectionModel().clearSelection();
     }
 }

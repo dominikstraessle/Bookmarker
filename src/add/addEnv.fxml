@@ -1,36 +1,54 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?><?import javafx.scene.control.Label?><?import javafx.scene.layout.HBox?><?import javafx.scene.layout.Region?><?import javafx.scene.layout.VBox?><?import javafx.scene.text.Font?><?import com.jfoenix.controls.JFXTextField?><?import com.jfoenix.controls.JFXColorPicker?><?import com.jfoenix.controls.JFXTextArea?><?import com.jfoenix.controls.JFXButton?>
-<VBox prefHeight="200.0" prefWidth="400.0" spacing="10.0" xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="add.AddBookmarkController">
-   <children>
-      <Label text="Add Bookmark">
-         <font>
-            <Font size="24.0" />
-         </font>
-      </Label>
-      <JFXTextField fx:id="addTxtUrl" promptText="Name" />
-      <JFXColorPicker />
-      <JFXTextArea fx:id="addTxtDesc" promptText="Description" />
-      <HBox alignment="BOTTOM_RIGHT" spacing="10.0">
+<?import com.jfoenix.controls.JFXButton?>
+<?import com.jfoenix.controls.JFXColorPicker?>
+<?import com.jfoenix.controls.JFXTextArea?>
+<?import com.jfoenix.controls.JFXTextField?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox prefHeight="250.0" prefWidth="400.0" spacing="10.0" xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="add.AddEnvironmentController">
+    <children>
+        <Label text="%add.environment">
+            <font>
+                <Font size="24.0" />
+            </font>
+        </Label>
+        <JFXTextField fx:id="addTxtName" promptText="%name" />
+      <AnchorPane VBox.vgrow="ALWAYS">
          <children>
-            <Region HBox.hgrow="ALWAYS" />
-            <JFXButton fx:id="addBtnCancel" cancelButton="true" onAction="#handleCancel" styleClass="blue_light" text="Cancel">
-               <HBox.margin>
-                  <Insets />
-               </HBox.margin>
-            </JFXButton>
-            <JFXButton fx:id="addBtnAdd" defaultButton="true" onAction="#handleAdd" styleClass="blue_dark" text="Add">
-               <HBox.margin>
-                  <Insets />
-               </HBox.margin>
-            </JFXButton>
+            <JFXColorPicker fx:id="addClrColor" layoutX="11.0" layoutY="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
          </children>
-         <padding>
-            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-         </padding>
-      </HBox>
-   </children>
-   <padding>
-      <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-   </padding>
+         <VBox.margin>
+            <Insets bottom="10.0" top="10.0" />
+         </VBox.margin>
+      </AnchorPane>
+        <JFXTextArea fx:id="addTxtDesc" promptText="%description" />
+        <HBox alignment="BOTTOM_RIGHT" spacing="10.0">
+            <children>
+                <Region HBox.hgrow="ALWAYS" />
+                <JFXButton fx:id="addBtnCancel" cancelButton="true" onAction="#handleCancel" styleClass="blue_light" text="%cancel">
+                    <HBox.margin>
+                        <Insets />
+                    </HBox.margin>
+                </JFXButton>
+                <JFXButton fx:id="addBtnAdd" defaultButton="true" onAction="#handleAdd" styleClass="blue_dark" text="%add">
+                    <HBox.margin>
+                        <Insets />
+                    </HBox.margin>
+                </JFXButton>
+            </children>
+            <padding>
+                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+            </padding>
+        </HBox>
+    </children>
+    <padding>
+        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+    </padding>
 </VBox>

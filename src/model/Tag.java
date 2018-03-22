@@ -1,14 +1,17 @@
 package model;
 
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import manage.Manager;
 
 public class Tag {
     /**
@@ -23,6 +26,10 @@ public class Tag {
      * Tag. String of the Tag.
      */
     private SimpleStringProperty tagString;
+    /**
+     * True if the Tag is modified/new
+     */
+    private boolean modified = false;
 
 
     /**
@@ -89,7 +96,7 @@ public class Tag {
         return Arrays
                 .stream(text.toLowerCase().split(" "))//make lowercase and split by blank
                 .distinct()//delete duplicates
-                .map(string -> new Tag(-1, string))//maps to tags with the given Tagstring//TODO maybe can be shortened with one map, create new tag in the orelse part
+                .map(string -> new Tag(Tag.getNewId(), string))//maps to tags with the given Tagstring !!--->>>> maybe can be shortened with one map, create new tag in the orelse part
                 .map(tag -> tags.stream()
                         .filter(tag::equals)//filters for a tag with the same tagString
                         .findAny()//return any
@@ -105,23 +112,39 @@ public class Tag {
      * @return same like #tag
      */
     private static Tag addAndReturn(Tag tag) {
+        try {
+            Manager.getDatabaseController().consumerWrapper(tag, Manager.getDatabaseController()::insert);
+        } catch (SQLException e) {
+            Manager.log(Level.SEVERE, "Failed to insert a Tag", e);//TODO error handling/logging
+        }
         tags.add(tag);
         return tag;
     }
 
 
     @Override
-//TODO comparing two SimpleStringProperties, how does it works, have i to change it to compare the contained strings or the property?
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Tag)) return false;
         Tag tag1 = (Tag) o;
-        return Objects.equals(tagString.get(), tag1.tagString.get());
+        return Objects.equals(getTagString(), tag1.getTagString());//compares the strings of the properties
     }
 
-    @Override//TODO
+    @Override
     public int hashCode() {
 
         return Objects.hash(tagString.get());
+    }
+
+    /**
+     * Returns the next ID to use.
+     *
+     * @return Next ID.
+     */
+    public static int getNewId() {
+        return tags.stream()
+                .mapToInt(Tag::getId)//map to all ID's
+                .max()//get the highest ID
+                .orElse(0) + 1;//add 1 to the highest id, if there is no ID at all, creates a new one from 0
     }
 }

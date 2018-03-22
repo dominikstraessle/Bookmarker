@@ -2,45 +2,79 @@ package manage;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.ResourceBundle;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 import add.AddBookmarkController;
+import add.AddEnvironmentController;
 import database.DatabaseController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.image.Image;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import model.Bookmark;
+import model.Environment;
 import search.SearchController;
+/*TODO Tasks
+- Add Environment Functionality in Search and Add-View
+- Support all Buttons in the search view
+- LocalDateFormat... and change Added to -> Modified
+- Icons support
+ */
 
+/**
+ * Manager stands for Managing everything that has to do with FXML, Database and the Application.
+ */
 public class Manager extends Application {
 
     /**
      * DatabaseController should be used by every component.
      */
-    private DatabaseController databaseController = new DatabaseController("res/data/data.sqlite");
+    private static DatabaseController databaseController = new DatabaseController("res/data/data.sqlite");
+    /**
+     * Ressource for internationalization.
+     */
+    private static ResourceBundle resourceBundle = ResourceBundle.getBundle("strings/lang");
 
+    /**
+     * Logger
+     */
+    private static final Logger LOGGER = Logger.getLogger("Bookmarker");
+    /**
+     * Primary Stage of the Application
+     */
     private Stage primaryStage;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
         this.primaryStage = primaryStage;
-
+        new Thread(Manager::loadData).start();//this will load the data from the database in a new Thread
+//        loadData();//this would be the alternative but running and blocking the current thread
         showSearch();
     }
 
-    //TODO: javadoc
-    private void showSearch() throws IOException, SQLException {
-        ResourceBundle resourceBundle = ResourceBundle.getBundle("strings/lang");//for internationalization
+    /**
+     * shows the standard screen for searching the bookmarks and view there details
+     *
+     * @throws IOException Loading of the fxml file went wrong
+     */
+    private void showSearch() throws IOException {
+//        ResourceBundle resourceBundle = ResourceBundle.getBundle("strings/lang");//for internationalization
         FXMLLoader loader = new FXMLLoader(getClass().getResource("../search/search.fxml"), resourceBundle);
         Parent root = loader.load();//load fxml
         root.getStylesheets().add("stylesheets/style.css");//add stylesheet
         SearchController searchController = loader.getController();//init controller
         searchController.setManager(this);//reference manager
-        loadData();//load everything from the database into the model
+//        loadData();//load everything from the database into the model
         this.primaryStage.getIcons().add(new Image("images/brand.png"));//add icon
         this.primaryStage.setTitle(resourceBundle.getString("bookmarker"));
         this.primaryStage.setScene(new Scene(root));
@@ -49,29 +83,79 @@ public class Manager extends Application {
 
     /**
      * Loads all data from the database into the ArrayLists.
-     * Shows all Bookmarks in the @{@link SearchController}s Listview
-     *
-     * @throws SQLException Failed to load data
+     * Shows all Bookmarks in the @{@link SearchController}s Listview and Environemnts in the @{@link SearchController}s ComboBox
      */
-    private void loadData() throws SQLException {
-        databaseController.consumerWrapper(databaseController::readTags);
-        databaseController.consumerWrapper(databaseController::readEnvironemnts);
-        databaseController.consumerWrapper(databaseController::readBookmarks);
-        Bookmark.showAllBookmarks();
-        //TODO: should i move this method calls into the static constructor of Bookmark class?
+    private static void loadData() {
+        try {
+            databaseController.consumerWrapper(databaseController::readTags);
+            databaseController.consumerWrapper(databaseController::readEnvironemnts);
+            databaseController.consumerWrapper(databaseController::readBookmarks);
+        } catch (SQLException e) {
+            Manager.log(Level.SEVERE, "Failed to load data", e);
+        }
+        Environment.refreshEnvironmentsResultsProperty();
+        Bookmark.refreshBookmarksResultsProperty();
     }
 
-    //TODO javadoc
-    private void writeData() throws SQLException {
-        databaseController.consumerWrapper(databaseController::writeAll);
-    }
-
+    /**
+     * Main Method
+     *
+     * @param args Arguments
+     */
     public static void main(String[] args) {
         launch(args);
     }
 
+    /**
+     * Creates an Alert for Exceptions
+     *
+     * @param title     Title
+     * @param header    Header
+     * @param content   Content
+     * @param stage     Owner Stage
+     * @param exception Exception
+     */
+    public static void alertException(String title, String header, String content, Stage stage, Exception exception, Level level) {
+        log(level, content, exception);//logging the Exception
+        alert(title, header, content, stage, Alert.AlertType.ERROR);
+    }
 
-    public DatabaseController getDatabaseController() {
+    /**
+     * Creates and shows an Alert
+     *
+     * @param title   Title
+     * @param header  Header
+     * @param content Content
+     * @param stage   Owner Stage
+     * @param type    Alerttype of the Alert
+     */
+    private static void alert(String title, String header, String content, Stage stage, Alert.AlertType type) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(header);
+        alert.setContentText(content);
+        alert.initOwner(stage);
+        alert.showAndWait();
+    }
+
+    /**
+     * Creates an Alert for Warnings
+     *
+     * @param title   Title
+     * @param header  Header
+     * @param content Content
+     * @param stage   Owner Stage
+     */
+    public static void alertWarning(String title, String header, String content, Stage stage) {
+        alert(title, header, content, stage, Alert.AlertType.WARNING);
+    }
+
+    /**
+     * Returns the Database controller
+     *
+     * @return The DatabaseController
+     */
+    public static DatabaseController getDatabaseController() {
         return databaseController;
     }
 
@@ -79,7 +163,7 @@ public class Manager extends Application {
      * Shows the Dialog to add a bookmark.
      */
     public void showAddBookmark() throws IOException {
-        ResourceBundle resourceBundle = ResourceBundle.getBundle("strings/lang");//for internationalization
+//        ResourceBundle resourceBundle = ResourceBundle.getBundle("strings/lang");//for internationalization
         FXMLLoader loader = new FXMLLoader(getClass().getResource("../add/addBookmark.fxml"), resourceBundle);
         Parent parent = loader.load();
         parent.getStylesheets().add("stylesheets/style.css");
@@ -95,7 +179,69 @@ public class Manager extends Application {
         dialog.showAndWait();
     }
 
+    /**
+     * Returns the PrimaryStage
+     *
+     * @return the Application Stage
+     */
     public Stage getPrimaryStage() {
         return primaryStage;
+    }
+
+    /**
+     * Log a message, with one object parameter.
+     * <p>
+     * If the logger is currently enabled for the given message
+     * level then a corresponding LogRecord is created and forwarded
+     * to all the registered output Handler objects.
+     *
+     * @param level  One of the message level identifiers, e.g., SEVERE
+     * @param msg    The string message (or a key in the message catalog)
+     * @param param1 parameter to the message
+     */
+    public static void log(Level level, String msg, Object param1) {
+        LOGGER.log(level, msg.replace(", ", "\n\t"), param1);
+    }
+
+    /*
+      Static constuctor for initializing the LOGGER.
+     */
+
+    static {
+        try {//Initialize the Logger to write into log files instead of the console
+            String date = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+            FileHandler fileHandler = new FileHandler("C:\\Users\\stra5\\IdeaProjects\\Bookmarker\\res\\log\\logging_" + date + ".log", true);//handler for log file
+            LOGGER.addHandler(fileHandler);//add handler
+            fileHandler.setFormatter(new SimpleFormatter());//set Formatter
+            LOGGER.setUseParentHandlers(false);//no console output anymore
+            LOGGER.info("Logger initialized");//first message
+        } catch (IOException e) {
+            log(Level.SEVERE, "Error initializing the Filehandler for Logging", e);
+        }
+    }
+
+    /**
+     * Shows the Dialog to add a environment from the primary stage.
+     */
+    public void showAddEnvironment() throws IOException {
+        showAddEnvironment(primaryStage);
+    }
+
+    /**
+     * Shows the Dialog to add a environment with a custom stage
+     */
+    public void showAddEnvironment(Stage customStage) throws IOException {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("../add/addEnv.fxml"), resourceBundle);
+        Parent parent = loader.load();
+        parent.getStylesheets().add("stylesheets/style.css");
+        AddEnvironmentController controller = loader.getController();
+        Stage dialog = new Stage();
+        controller.setDialogStage(dialog);
+        dialog.setTitle(resourceBundle.getString("add"));
+        dialog.getIcons().add(new Image("images/brand.png"));
+        dialog.setScene(new Scene(parent));
+        dialog.initModality(Modality.WINDOW_MODAL);
+        dialog.initOwner(customStage);
+        dialog.showAndWait();
     }
 }

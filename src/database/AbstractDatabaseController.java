@@ -5,6 +5,9 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Optional;
 
+/**
+ * Simplify the SQLite Connections offers Wrapper Methods for delete, insert, select, alter etc.
+ */
 public class AbstractDatabaseController {
     /**
      * The driver + filename of the sqlite database

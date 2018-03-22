@@ -5,9 +5,13 @@ import com.jfoenix.controls.JFXComboBox;
 import com.jfoenix.controls.JFXTextArea;
 import com.jfoenix.controls.JFXTextField;
 
+import java.io.IOException;
 import java.net.URL;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -28,6 +32,9 @@ public class AddBookmarkController {
      * The actual Dialog Stage, the ok and cancel button must have the ability to interact with it.
      */
     private Stage dialogStage;
+
+    @FXML
+    public JFXButton addBtnAddEnv;
 
     @FXML
     private ResourceBundle resources;
@@ -74,10 +81,23 @@ public class AddBookmarkController {
             String url = addTxtUrl.getText();
             String desc = addTxtDesc.getText();
             Environment env = addComboEnv.getSelectionModel().getSelectedItem();
-            Bookmark bookmark = new Bookmark(-1, desc, title, url, LocalDateTime.now(), env, Tag.add(addTxtTags.getText()));
-            Bookmark.getBookmarks().add(bookmark);
+            Bookmark bookmark = new Bookmark(Bookmark.getNewID(), desc, title, url, LocalDateTime.now(), env, Tag.add(addTxtTags.getText()));
+            try {
+                Bookmark.add(bookmark);
+            } catch (SQLException e) {
+                Manager.alertException(resources.getString("error"),
+                        resources.getString("error.02"),
+                        e.getMessage(), this.dialogStage,
+                        e,
+                        Level.SEVERE);
+            }
             //TODO when the application closes, all tags, bookmarks and environments should be written to the database when the id equals -1
             dialogStage.close();
+        } else {
+            Manager.alertWarning(resources.getString("add.invalid"),
+                    resources.getString("add.invalid"),
+                    resources.getString("add.invalid.content"),
+                    this.dialogStage);
         }
     }
 
@@ -93,13 +113,13 @@ public class AddBookmarkController {
         if (addTxtTitle.getText().equals("")) ok = false;//title
         if (addTxtTags.getText().equals("")) ok = false;//tags
         if (addTxtDesc.getText().equals("")) ok = false;//desc
-//        if (addComboEnv.getSelectionModel().getSelectedItem().equals("")) ok = false;//env
+        if (addComboEnv.getSelectionModel().getSelectedItem() == null) ok = false;//env
         return ok;
     }
 
     @FXML
     void handleCancel(ActionEvent event) {
-
+        dialogStage.close();
     }
 
     /**
@@ -108,7 +128,7 @@ public class AddBookmarkController {
     @FXML
     void initialize() {
         addLblAdded.setText(LocalDateTime.now().toString());//Now
-        addComboEnv.setItems(Environment.getEnvironments());
+        addComboEnv.itemsProperty().bind(Environment.environmentsPropertyProperty());
     }
 
 
@@ -128,5 +148,14 @@ public class AddBookmarkController {
      */
     public void setDialogStage(Stage dialogStage) {
         this.dialogStage = dialogStage;
+    }
+
+    @FXML
+    public void handleAddEnv(ActionEvent actionEvent) {
+        try {
+            manager.showAddEnvironment(dialogStage);
+        } catch (IOException e) {
+            Manager.alertException(resources.getString("error"), resources.getString("error.01"), Arrays.toString(e.getStackTrace()), manager.getPrimaryStage(), e, Level.SEVERE);
+        }
     }
 }
