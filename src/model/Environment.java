@@ -38,10 +38,6 @@ public class Environment {
      * Color
      */
     private ObjectProperty<Color> color;
-    /**
-     * True if the Environment is modified/new
-     */
-    private boolean modified = false;
 
 //    /**
 //     * Constructor with all required fields

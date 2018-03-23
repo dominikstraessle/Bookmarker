@@ -7,18 +7,23 @@ import com.jfoenix.controls.JFXTextField;
 
 import java.sql.SQLException;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import manage.Manager;
 import model.Environment;
-import model.Tag;
 
+/**
+ * Controller of the addEnvironment.fxml
+ *
+ * @author Dominik Strässle
+ */
 public class AddEnvironmentController {
 
+    /**
+     * Stage
+     */
     private Stage dialogStage;
 
     @FXML
@@ -39,31 +44,37 @@ public class AddEnvironmentController {
     private JFXButton addBtnAdd;
 
     /**
-     * Eventhandler for {@link #addBtnAdd}. When the Button is clicked, it checks if the information is complete.
-     * Then it creates a new Bookmark with the given information.
-     * For adding the correct references of @{@link Tag} to the bookmark it uses the Tag.add Method.
-     * Then the Bookmark will be added to the Bookmark list and the stage closed.
+     * Eventhandler for {@link #addBtnAdd}. When the Button is clicked, it checks if the fields are filled valid.
+     * Then it creates a new Environment with the given information.
+     * The new Environment will be added to the @{@link Environment#environments} List.
      *
      * @param event Button clicked event.
      */
     @FXML
     void handleAdd(ActionEvent event) {
         if (checkFields()) {
-            String name = addTxtName.getText();
-            String desc = addTxtDesc.getText();
-            Color color = addClrColor.getValue();
+
             try {
-                Environment.add(new Environment(Environment.getNewID(), name, desc, color));
-            } catch (SQLException e) {
-                Manager.alertException(resources.getString("error"),
+                Environment.add(new Environment(
+                        Environment.getNewID(),//ID
+                        addTxtName.getText(),//Name
+                        addTxtDesc.getText(),//Desc
+                        addClrColor.getValue()));//Color
+            } catch (SQLException exception) {
+                //failed to add a environment, IO with database failed
+                Manager.alertException(
+                        resources.getString("error"),
                         resources.getString("error.02"),
-                        e.getMessage(), this.dialogStage,
-                        e,
-                        Level.SEVERE);
+                        this.dialogStage,
+                        exception
+                );
             }
+            //close the stage
             dialogStage.close();
         } else {
-            Manager.alertWarning(resources.getString("add.invalid"),
+            //fields are not filled valid
+            Manager.alertWarning(
+                    resources.getString("add.invalid"),
                     resources.getString("add.invalid"),
                     resources.getString("add.invalid.content"),
                     this.dialogStage);
@@ -77,11 +88,10 @@ public class AddEnvironmentController {
      * @return true if all required fiels are filled, else false.
      */
     private boolean checkFields() {
-        boolean ok = true;
-        if (addTxtName.getText().equals("")) ok = false;//name
-        if (addTxtDesc.getText().equals("")) ok = false;//desc
-        if (addClrColor.getValue() == null) ok = false;//color
-        return ok;
+        if (addTxtName.getText().equals("")) return false;//name
+        if (addTxtDesc.getText().equals("")) return false;//desc
+        if (addClrColor.getValue() == null) return false;//color
+        return true;//everything is valid
     }
 
     @FXML
@@ -94,6 +104,11 @@ public class AddEnvironmentController {
 
     }
 
+    /**
+     * the current {@link #dialogStage} can be set
+     *
+     * @param dialogStage given Stage
+     */
     public void setDialogStage(Stage dialogStage) {
         this.dialogStage = dialogStage;
     }

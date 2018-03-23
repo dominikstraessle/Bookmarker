@@ -7,7 +7,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Map;
+import java.util.logging.Level;
 
+import javafx.beans.Observable;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -36,9 +38,14 @@ public class Bookmark {
      */
     private static ObservableList<Bookmark> bookmarks = FXCollections.observableArrayList();
     /**
-     * This List contains all bookmarks at the runtime, it is used for filtering.
+     * This is everytime the actual filterString.
      */
-    private static ObservableList<Bookmark> searchBookmarks = FXCollections.observableArrayList();
+    private static SimpleStringProperty filterString = new SimpleStringProperty("");
+    /**
+     * This is the actually selected Environment
+     */
+    private static SimpleObjectProperty<Environment> selectedEnvironment = new SimpleObjectProperty<>();
+
 
     /**
      * ID
@@ -68,10 +75,6 @@ public class Bookmark {
      * All corresponding tags
      */
     private ObservableList<Tag> tags = FXCollections.observableArrayList();
-    /**
-     * True if the Bookmark is modified/new
-     */
-    private boolean modified = false;
 
     /**
      * Constuctor with all fields
@@ -117,21 +120,19 @@ public class Bookmark {
     /**
      * Filters the {@link #bookmarks} List with the search keywords.
      * Collects the results to {@link #results} and removes all entrys with no filter match
-     *
-     * @param newValue Filter String
      */
-    public static void filter(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-        if (newValue.length() > 100) return;//TODO: do i require this?
+    public static void filter(Observable observable) {
+        if (getFilterString().length() > 100) return;//TODO: do i require this?
 
         //Creates a ArrayList with all search keywords -> they are splitted by a blank.
         //converts the string to lowercase before
         ArrayList<String> filterCriteria = new ArrayList<>(Arrays
-                .asList(newValue//the new filter string
+                .asList(getFilterString()//the new filter string
                         .toLowerCase()//make everything lowercase
                         .split(" ")));//splits by blank
 
         //adds all bookmarks with the corresponding number of matches with the filter strings to a Map | bookmarks with no matches already removed.
-        Bookmark.results = FXCollections.observableArrayList(Bookmark.searchBookmarks.stream()//stream of all bookmarks
+        Bookmark.results = FXCollections.observableArrayList(Bookmark.bookmarks.stream()//stream of all bookmarks
                 .collect(toMap(Bookmark::getMe, bookmark -> filterCriteria.stream()//Maps the values to a key<Bookmark> with the value of matches<Integer>
                         .mapToInt(bookmark::countMatches)//counts the matches for every filter String
                         .sum()))//summarize the value of all matches
@@ -200,6 +201,22 @@ public class Bookmark {
 
     public ObservableList<Tag> getTags() {
         return tags;
+    }
+
+    public static String getFilterString() {
+        return filterString.get();
+    }
+
+    public static SimpleStringProperty filterStringProperty() {
+        return filterString;
+    }
+
+    public static Environment getSelectedEnvironment() {
+        return selectedEnvironment.get();
+    }
+
+    public static SimpleObjectProperty<Environment> currentEnvironmentProperty() {
+        return selectedEnvironment;
     }
 
     public void setTags(ObservableList<Tag> tags) {
@@ -303,6 +320,7 @@ public class Bookmark {
      */
     public static void refreshBookmarksResultsProperty() {
         Bookmark.resultProperty.set(bookmarks);//after all Bookmarks are loaded, the property is updated the first time
+        filterStringProperty().set("");
     }
 
     /**
@@ -327,18 +345,31 @@ public class Bookmark {
                 .orElse(0) + 1;//add 1 to the highest id, if there is no ID at all, creates a new one from 0
     }
 
-    //TODO javadoc + comments
-    public static void changeSearchList(ObservableValue<? extends Environment> observable, Environment oldValue, Environment newValue) {
-        if (newValue == null) {
-            searchBookmarks = bookmarks;
-            System.out.println("null");
-        } else {
-            System.out.println(newValue);
-            searchBookmarks = bookmarks.filtered(bookmark -> bookmark.getEnvironment() == newValue);
-            System.out.println(searchBookmarks);
+    /**
+     * When the Environment changes, all corresponding Bookmarks will be loaded into the {@link #bookmarks} list.
+     *
+     * @param observable
+     * @param oldValue
+     * @param newValue   new Selected Environment
+     */
+    public static void changeEnvironment(ObservableValue<? extends Environment> observable, Environment oldValue, Environment newValue) {
+        try {
+            if (newValue == null) {
+                Manager.getDatabaseController().consumerWrapper(Manager.getDatabaseController()::readBookmarks);//read all Bookmarks
+            } else {
+                Manager.getDatabaseController().consumerWrapper(newValue, Manager.getDatabaseController()::readBookmarks);//read only the corresponding bookmarks
+            }
+        } catch (SQLException e) {
+            Manager.log(Level.SEVERE, "Failed to load Bookmarks from database", e);
         }
-        results = searchBookmarks;
-        resultProperty.set(results);
-        //TODO: filter string clearen? wenn umgebung gewechselt?
+        //refresh the bookmarks
+        refreshBookmarksResultsProperty();
+    }
+
+    static {
+        //listener for filtering the bookmarks list with the given string
+        filterStringProperty().addListener(Bookmark::filter);
+        //When a new Environment is selected, then the search list will only be such elements, where the environment equals the selected environment
+        currentEnvironmentProperty().addListener(Bookmark::changeEnvironment);
     }
 }

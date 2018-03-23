@@ -7,6 +7,8 @@ import java.util.Optional;
 
 /**
  * Simplify the SQLite Connections offers Wrapper Methods for delete, insert, select, alter etc.
+ *
+ * @author Dominik Strässle
  */
 public class AbstractDatabaseController {
     /**
@@ -76,6 +78,7 @@ public class AbstractDatabaseController {
      * @param <R>      ResultSet as return type
      * @return Optional of ResultSet
      * @throws SQLException Something went wrong
+     * @deprecated this method cant be used, because a resultset is closed with its connection.
      */
     public <S, R> Optional<R> functionWrapper(S s, DatabaseSelectFunction<S, Connection, R> function) throws SQLException {
         try (Connection connection = this.connect()) {

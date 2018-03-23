@@ -8,6 +8,7 @@ import java.sql.SQLException;
  *
  * @param <S> SQL String
  * @param <T> Connection
+ * @author Dominik Strässle
  */
 @FunctionalInterface
 public interface DatabaseConsumer<S, T> {

@@ -3,6 +3,7 @@ package manage;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.ResourceBundle;
 import java.util.logging.FileHandler;
@@ -25,10 +26,13 @@ import model.Bookmark;
 import model.Environment;
 import search.SearchController;
 /*TODO Tasks
+- tidy up every class
 - Add Environment Functionality in Search and Add-View
-- Support all Buttons in the search view
+- Support all Buttons in the search view and environment delete etc
 - LocalDateFormat... and change Added to -> Modified
 - Icons support
+- Threads to load
+//TODO: https://github.com/jOOQ/jOOQ
  */
 
 /**
@@ -49,6 +53,7 @@ public class Manager extends Application {
      * Logger
      */
     private static final Logger LOGGER = Logger.getLogger("Bookmarker");
+
     /**
      * Primary Stage of the Application
      */
@@ -111,30 +116,30 @@ public class Manager extends Application {
      *
      * @param title     Title
      * @param header    Header
-     * @param content   Content
      * @param stage     Owner Stage
      * @param exception Exception
      */
-    public static void alertException(String title, String header, String content, Stage stage, Exception exception, Level level) {
-        log(level, content, exception);//logging the Exception
+    public static void alertException(String title, String header, Stage stage, Exception exception) {
+        log(Level.SEVERE, header, exception);//logging the Exception
+        String content = Arrays.toString(exception.getStackTrace()).replace(", ", "\n\t");
         alert(title, header, content, stage, Alert.AlertType.ERROR);
     }
 
     /**
      * Creates and shows an Alert
      *
-     * @param title   Title
-     * @param header  Header
-     * @param content Content
-     * @param stage   Owner Stage
-     * @param type    Alerttype of the Alert
+     * @param title      Title
+     * @param header     Header
+     * @param content    Content
+     * @param ownerStage Owner Stage
+     * @param type       Alerttype of the Alert
      */
-    private static void alert(String title, String header, String content, Stage stage, Alert.AlertType type) {
+    private static void alert(String title, String header, String content, Stage ownerStage, Alert.AlertType type) {
         Alert alert = new Alert(type);
         alert.setTitle(title);
         alert.setHeaderText(header);
         alert.setContentText(content);
-        alert.initOwner(stage);
+        alert.initOwner(ownerStage);
         alert.showAndWait();
     }
 
@@ -195,12 +200,14 @@ public class Manager extends Application {
      * level then a corresponding LogRecord is created and forwarded
      * to all the registered output Handler objects.
      *
-     * @param level  One of the message level identifiers, e.g., SEVERE
-     * @param msg    The string message (or a key in the message catalog)
-     * @param param1 parameter to the message
+     * @param level     One of the message level identifiers, e.g., SEVERE
+     * @param title     The string message (or a key in the message catalog)
+     * @param exception parameter to the message
      */
-    public static void log(Level level, String msg, Object param1) {
-        LOGGER.log(level, msg.replace(", ", "\n\t"), param1);
+    public static void log(Level level, String title, Exception exception) {
+        String stackTrace = Arrays.toString(exception.getStackTrace()).replace(", ", "\n\t");
+        String logMessage = title + "\n\t" + stackTrace;
+        LOGGER.log(level, logMessage, exception);
     }
 
     /*

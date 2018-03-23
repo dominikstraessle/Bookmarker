@@ -26,10 +26,6 @@ public class Tag {
      * Tag. String of the Tag.
      */
     private SimpleStringProperty tagString;
-    /**
-     * True if the Tag is modified/new
-     */
-    private boolean modified = false;
 
 
     /**

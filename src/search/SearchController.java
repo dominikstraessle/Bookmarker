@@ -8,9 +8,7 @@ import com.jfoenix.controls.JFXTextField;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import javafx.event.ActionEvent;
@@ -117,7 +115,7 @@ public class SearchController {
         try {
             manager.showAddBookmark();
         } catch (IOException e) {
-            Manager.alertException(resources.getString("error"), resources.getString("error.01"), Arrays.toString(e.getStackTrace()), manager.getPrimaryStage(), e, Level.SEVERE);
+            Manager.alertException(resources.getString("error"), resources.getString("error.01"), manager.getPrimaryStage(), e);
         }
     }
 
@@ -126,7 +124,7 @@ public class SearchController {
         try {
             manager.showAddEnvironment();
         } catch (IOException e) {
-            Manager.alertException(resources.getString("error"), resources.getString("error.01"), Arrays.toString(e.getStackTrace()), manager.getPrimaryStage(), e, Level.SEVERE);
+            Manager.alertException(resources.getString("error"), resources.getString("error.01"), manager.getPrimaryStage(), e);
         }
     }
 
@@ -201,18 +199,18 @@ public class SearchController {
         //sets the lookalike of a cell in the listview
         resultList.setCellFactory(this::cellFactoryList);
 
-        //listener for filtering the bookmarks list with the given string
-        searchTxtKeyWords.textProperty().addListener(Bookmark::filter);
+        //Binding of the filter string with the @Bookmark.filterStringProperty
+        // -> used for filter the the list with the given keywords
+        searchTxtKeyWords.textProperty().bindBidirectional(Bookmark.filterStringProperty());
 
         //shows the detail of the selected item
         resultList.getSelectionModel()
                 .selectedItemProperty()//get the selected item
                 .addListener((observable, oldValue, newValue) -> showBookmarkDetails(newValue));//show the details of the selected item.
-
         //binds the environments to the searchComboBox
         searchComboEnv.itemsProperty().bind(Environment.environmentsPropertyProperty());
         //When a new Environment is selected, then the search list will only be such elements, where the environment equals the selected environment
-        searchComboEnv.getSelectionModel().selectedItemProperty().addListener(Bookmark::changeSearchList);
+        Bookmark.currentEnvironmentProperty().bind(searchComboEnv.getSelectionModel().selectedItemProperty());
     }
 
     /**
