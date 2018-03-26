@@ -30,9 +30,9 @@
                     </items>
                 </Menu>
                 <Menu mnemonicParsing="false" text="%edit">
-                    <items>
-
-                    </items>
+               <items>
+                  <MenuItem fx:id="menuDeleteEnvironment" mnemonicParsing="false" onAction="#handleDeleteEnvironment" text="%delete.environment" />
+               </items>
                 </Menu>
                 <Menu mnemonicParsing="false" text="%help">
                     <items>

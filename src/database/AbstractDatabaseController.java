@@ -6,7 +6,7 @@ import java.sql.SQLException;
 import java.util.Optional;
 
 /**
- * Simplify the SQLite Connections offers Wrapper Methods for delete, insert, select, alter etc.
+ * Simplify the SQLite Connections. Offers Wrapper Methods for delete, insert, select, alter etc.
  *
  * @author Dominik Strässle
  */
@@ -69,24 +69,24 @@ public class AbstractDatabaseController {
         }
     }
 
-    /**
-     * Use this Method to execute a select to get all entrys
-     *
-     * @param s        String of the table name
-     * @param function function which performs a select
-     * @param <S>      String to insert a table name
-     * @param <R>      ResultSet as return type
-     * @return Optional of ResultSet
-     * @throws SQLException Something went wrong
-     * @deprecated this method cant be used, because a resultset is closed with its connection.
-     */
-    public <S, R> Optional<R> functionWrapper(S s, DatabaseSelectFunction<S, Connection, R> function) throws SQLException {
-        try (Connection connection = this.connect()) {
-            if (connection == null) {
-                throw new SQLException();
-            } else {
-                return Optional.of(function.execute(s, connection));
-            }
-        }
-    }
+//    /**
+//     * Use this Method to execute a select to get all entrys
+//     *
+//     * @param s        String of the table name
+//     * @param function function which performs a select
+//     * @param <S>      String to insert a table name
+//     * @param <R>      ResultSet as return type
+//     * @return Optional of ResultSet
+//     * @throws SQLException Something went wrong
+//     * @deprecated this method cant be used, because a resultset is closed with its connection.
+//     */
+//    public <S, R> Optional<R> functionWrapper(S s, DatabaseSelectFunction<S, Connection, R> function) throws SQLException {
+//        try (Connection connection = this.connect()) {
+//            if (connection == null) {
+//                throw new SQLException();
+//            } else {
+//                return Optional.of(function.execute(s, connection));
+//            }
+//        }
+//    }
 }

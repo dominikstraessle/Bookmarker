@@ -94,6 +94,11 @@ public class AddEnvironmentController {
         return true;//everything is valid
     }
 
+    /**
+     * Close the stage
+     *
+     * @param event cancel button clicked
+     */
     @FXML
     void handleCancel(ActionEvent event) {
         dialogStage.close();

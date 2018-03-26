@@ -26,22 +26,27 @@ import model.Bookmark;
 import model.Environment;
 import search.SearchController;
 /*TODO Tasks
-- tidy up every class
-- Add Environment Functionality in Search and Add-View
+-X- tidy up every class
+-X- Add Environment Functionality in Search and Add-View
 - Support all Buttons in the search view and environment delete etc
+- Implement the IOInterface class
+- Beautify the alertException
 - LocalDateFormat... and change Added to -> Modified
 - Icons support
-- Threads to load
+- jOOQ
+- Threads to load / asynchronous loading/writing
 //TODO: https://github.com/jOOQ/jOOQ
  */
 
 /**
  * Manager stands for Managing everything that has to do with FXML, Database and the Application.
+ *
+ * @author Dominik Strässle
  */
 public class Manager extends Application {
 
     /**
-     * DatabaseController should be used by every component.
+     * This DatabaseController should be used by every component.
      */
     private static DatabaseController databaseController = new DatabaseController("res/data/data.sqlite");
     /**
@@ -59,11 +64,18 @@ public class Manager extends Application {
      */
     private Stage primaryStage;
 
+    /**
+     * The start method is executed at the start of the application and loads the data from the database and the fxml files.
+     *
+     * @param primaryStage the primary stage
+     * @throws Exception Error
+     */
     @Override
     public void start(Stage primaryStage) throws Exception {
         this.primaryStage = primaryStage;
-        new Thread(Manager::loadData).start();//this will load the data from the database in a new Thread
-//        loadData();//this would be the alternative but running and blocking the current thread
+        //this will load the data from the database in a new Thread
+        new Thread(Manager::loadData).start();
+        //load and show the search view
         showSearch();
     }
 
@@ -73,13 +85,11 @@ public class Manager extends Application {
      * @throws IOException Loading of the fxml file went wrong
      */
     private void showSearch() throws IOException {
-//        ResourceBundle resourceBundle = ResourceBundle.getBundle("strings/lang");//for internationalization
         FXMLLoader loader = new FXMLLoader(getClass().getResource("../search/search.fxml"), resourceBundle);
         Parent root = loader.load();//load fxml
         root.getStylesheets().add("stylesheets/style.css");//add stylesheet
         SearchController searchController = loader.getController();//init controller
         searchController.setManager(this);//reference manager
-//        loadData();//load everything from the database into the model
         this.primaryStage.getIcons().add(new Image("images/brand.png"));//add icon
         this.primaryStage.setTitle(resourceBundle.getString("bookmarker"));
         this.primaryStage.setScene(new Scene(root));
@@ -152,6 +162,7 @@ public class Manager extends Application {
      * @param stage   Owner Stage
      */
     public static void alertWarning(String title, String header, String content, Stage stage) {
+        log(Level.WARNING, header, content);
         alert(title, header, content, stage, Alert.AlertType.WARNING);
     }
 
@@ -168,7 +179,6 @@ public class Manager extends Application {
      * Shows the Dialog to add a bookmark.
      */
     public void showAddBookmark() throws IOException {
-//        ResourceBundle resourceBundle = ResourceBundle.getBundle("strings/lang");//for internationalization
         FXMLLoader loader = new FXMLLoader(getClass().getResource("../add/addBookmark.fxml"), resourceBundle);
         Parent parent = loader.load();
         parent.getStylesheets().add("stylesheets/style.css");
@@ -210,21 +220,20 @@ public class Manager extends Application {
         LOGGER.log(level, logMessage, exception);
     }
 
-    /*
-      Static constuctor for initializing the LOGGER.
+    /**
+     * Log a message, with one object parameter.
+     * <p>
+     * If the logger is currently enabled for the given message
+     * level then a corresponding LogRecord is created and forwarded
+     * to all the registered output Handler objects.
+     *
+     * @param level   One of the message level identifiers, e.g., SEVERE
+     * @param title   The string message (or a key in the message catalog)
+     * @param message parameter to the message
      */
-
-    static {
-        try {//Initialize the Logger to write into log files instead of the console
-            String date = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
-            FileHandler fileHandler = new FileHandler("C:\\Users\\stra5\\IdeaProjects\\Bookmarker\\res\\log\\logging_" + date + ".log", true);//handler for log file
-            LOGGER.addHandler(fileHandler);//add handler
-            fileHandler.setFormatter(new SimpleFormatter());//set Formatter
-            LOGGER.setUseParentHandlers(false);//no console output anymore
-            LOGGER.info("Logger initialized");//first message
-        } catch (IOException e) {
-            log(Level.SEVERE, "Error initializing the Filehandler for Logging", e);
-        }
+    public static void log(Level level, String title, String message) {
+        String logMessage = title + "\n\t" + message;
+        LOGGER.log(level, logMessage, message);
     }
 
     /**
@@ -250,5 +259,21 @@ public class Manager extends Application {
         dialog.initModality(Modality.WINDOW_MODAL);
         dialog.initOwner(customStage);
         dialog.showAndWait();
+    }
+
+    /*
+    Static constuctor for initializing the LOGGER.
+    */
+    static {
+        try {//Initialize the Logger to write into log files instead of the console
+            String date = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+            FileHandler fileHandler = new FileHandler("C:\\Users\\stra5\\IdeaProjects\\Bookmarker\\res\\log\\logging_" + date + ".log", true);//handler for log file
+            LOGGER.addHandler(fileHandler);//add handler
+            fileHandler.setFormatter(new SimpleFormatter());//set Formatter
+            LOGGER.setUseParentHandlers(false);//no console output anymore
+            LOGGER.info("Logger initialized");//first message
+        } catch (IOException e) {
+            log(Level.SEVERE, "Error initializing the Filehandler for Logging", e);
+        }
     }
 }

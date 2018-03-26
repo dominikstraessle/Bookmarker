@@ -8,9 +8,11 @@ import com.jfoenix.controls.JFXTextField;
 
 import java.io.IOException;
 import java.net.URL;
+import java.sql.SQLException;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
+import javafx.application.HostServices;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -19,6 +21,8 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.VBox;
 import javafx.scene.web.WebView;
 import manage.Manager;
@@ -33,6 +37,8 @@ public class SearchController {
      */
     private Manager manager;
 
+    @FXML
+    public MenuItem menuDeleteEnvironment;
     @FXML
     private ResourceBundle resources;
 
@@ -119,6 +125,11 @@ public class SearchController {
         }
     }
 
+    /**
+     * Add a environment
+     *
+     * @param event
+     */
     @FXML
     void handleAddEnv(ActionEvent event) {
         try {
@@ -133,25 +144,71 @@ public class SearchController {
 
     }
 
+    /**
+     * Copy the current displayed url in the systems clipboard
+     *
+     * @param event button clicked
+     */
     @FXML
     void handleCopy(ActionEvent event) {
-
+        if (!detailTxtUrl.getText().equals("")) {//make sure the link is not empty
+            ClipboardContent content = new ClipboardContent();
+            //put the string into the content
+            content.putString(detailTxtUrl.getText());
+            //copy the content to clipboard
+            Clipboard.getSystemClipboard().setContent(content);
+        } else {
+            //invalid link
+            Manager.alertWarning(resources.getString("error.07"), resources.getString("error.05"), resources.getString("error.06"), manager.getPrimaryStage());
+        }
     }
 
+    /**
+     * This deletes the currently selected Bookmark from the list and database
+     *
+     * @param event button clicked
+     */
     @FXML
     void handleDelete(ActionEvent event) {
-
+        if (resultList.getSelectionModel().getSelectedItem() != null) {
+            try {
+                Bookmark.deleteBookmark(resultList.getSelectionModel().getSelectedItem());
+            } catch (SQLException exception) {
+                //Error while deleteing
+                Manager.alertException(resources.getString("error.08"), resources.getString("error.08"), manager.getPrimaryStage(), exception);
+            }
+        } else {
+            //no bookmark selected
+            Manager.alertWarning(resources.getString("error.06"), resources.getString("error.06"), resources.getString("error.06"), manager.getPrimaryStage());
+        }
     }
 
+    /**
+     * Opens the current displayed url in the systems standard browser.
+     *
+     * @param event button clicked
+     */
     @FXML
     void handleOpen(ActionEvent event) {
-
+        try {
+            if (!detailTxtUrl.getText().equals("")) {//make sure the link is not empty
+                HostServices services = this.manager.getHostServices();//host service to call the browser
+                services.showDocument(detailTxtUrl.getText());//open in browser
+            } else {
+                //invalid link
+                Manager.alertWarning(resources.getString("error.03"), resources.getString("error.05"), resources.getString("error.06"), manager.getPrimaryStage());
+            }
+        } catch (Exception exception) {
+            //unable to open the browser
+            Manager.alertException(resources.getString("error.03"), resources.getString("error.04"), manager.getPrimaryStage(), exception);
+        }
     }
 
     @FXML
     void handleSave(ActionEvent event) {
 
     }
+
 
     /**
      * Constuctor is called before the {@link #initialize()}  method.
@@ -258,5 +315,25 @@ public class SearchController {
     @FXML
     public void handleReset(ActionEvent actionEvent) {
         searchComboEnv.getSelectionModel().clearSelection();
+    }
+
+    /**
+     * Delete the currently selected environment from the list and database
+     *
+     * @param actionEvent button clicked
+     */
+    @FXML
+    public void handleDeleteEnvironment(ActionEvent actionEvent) {
+        if (searchComboEnv.getSelectionModel().selectedItemProperty().get() != null) {//check if one is selected
+            try {
+                Environment.delete();//deletes the currently selected environment
+            } catch (SQLException exception) {
+                //Error while deleteing
+                Manager.alertException(resources.getString("error.08"), resources.getString("error.08"), manager.getPrimaryStage(), exception);
+            }
+        } else {
+            //no environment selected
+            Manager.alertWarning(resources.getString("error.06"), resources.getString("error.06"), resources.getString("error.06"), manager.getPrimaryStage());
+        }
     }
 }

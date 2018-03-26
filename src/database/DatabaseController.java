@@ -254,7 +254,7 @@ public class DatabaseController extends AbstractDatabaseController {
     }
 
     /**
-     * Returns a List of Tags that are in the bookmark_has_tag table with the given id
+     * Returns a List of Tags that are in the bookmark_has_tag table with the given id of a Bookmark
      *
      * @param id id of the Bookmark
      * @return List of tags
@@ -331,6 +331,67 @@ public class DatabaseController extends AbstractDatabaseController {
     }
 
 
+    /**
+     * Deletes the given Bookmark from the database
+     *
+     * @param bookmark   Bookmark to delete
+     * @param connection connection to the database
+     * @throws SQLException Delete went wrong
+     */
+    public void delete(Bookmark bookmark, Connection connection) throws SQLException {
+        String SQL = "DELETE FROM bookmark WHERE idbookmark = ?";
+        PreparedStatement statement = connection.prepareStatement(SQL);
+        //set parameters
+        statement.setInt(1, bookmark.getId());
+        statement.executeUpdate();
+
+        SQL = "DELETE FROM bookmark_has_tag WHERE idbookmark = ?";
+        statement = connection.prepareStatement(SQL);
+        //set parameters
+        statement.setInt(1, bookmark.getId());
+        statement.executeUpdate();
+    }
+
+    /**
+     * Deletes the given Environment and all corresponding bookmarks from the database
+     *
+     * @param environment Environment to delete
+     * @param connection  connection to the databse
+     * @throws SQLException Delete went wrong
+     */
+    public void delete(Environment environment, Connection connection) {
+        try {
+
+            connection.setAutoCommit(false);
+            //from the environment table
+            String SQL = "DELETE FROM environment WHERE idenvironment = ?";
+            PreparedStatement statement = connection.prepareStatement(SQL);
+            //set parameters
+            statement.setInt(1, environment.getId());
+            statement.executeUpdate();
+
+            //from the bookmark table
+            SQL = "DELETE FROM bookmark WHERE environment = ?";
+            statement = connection.prepareStatement(SQL);
+            //set parameters
+            statement.setInt(1, environment.getId());
+            statement.executeUpdate();
+            connection.commit();
+        } catch (SQLException exceptionCommit) {
+            try {
+                connection.rollback();
+            } catch (SQLException exceptionRollback) {
+                Manager.log(Level.SEVERE, "Rollback after failed transaction failed", exceptionRollback);
+            }
+            Manager.log(Level.SEVERE, "Delete environment transaction failed", exceptionCommit);
+        } finally {
+            try {
+                connection.setAutoCommit(true);
+            } catch (SQLException exceptionSetCommit) {
+                Manager.log(Level.SEVERE, "Set to autocommit true failed", exceptionSetCommit);
+            }
+        }
+    }
 }
 
 

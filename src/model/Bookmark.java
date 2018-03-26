@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.logging.Level;
 
 import javafx.beans.Observable;
@@ -22,6 +23,13 @@ import manage.Manager;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
+/**
+ * The Datamodel for the Bookmark.
+ * Instance Methodes/Attributes hold the functionality of a singel Bookmark.
+ * Class Methods/Attributes are utilitys and lists containing filter results and all current bookmarks.
+ *
+ * @author Dominik Strässle
+ */
 public class Bookmark {
 
     /**
@@ -116,13 +124,24 @@ public class Bookmark {
         this.environment = new SimpleObjectProperty<>(environment);
     }
 
+    /**
+     * Adds a list of Tags.
+     *
+     * @param tags List of Tags
+     */
+    public void addTags(Collection<? extends Tag> tags) {
+        this.tags.addAll(tags);
+    }
+
 
     /**
      * Filters the {@link #bookmarks} List with the search keywords.
      * Collects the results to {@link #results} and removes all entrys with no filter match
+     *
+     * @param observable observable
      */
     public static void filter(Observable observable) {
-        if (getFilterString().length() > 100) return;//TODO: do i require this?
+//        if (getFilterString().length() > 100) return;//TODO: do i require this?
 
         //Creates a ArrayList with all search keywords -> they are splitted by a blank.
         //converts the string to lowercase before
@@ -168,15 +187,68 @@ public class Bookmark {
         return count;
     }
 
+
     /**
-     * Adds a list of Tags.
-     *
-     * @param tags List of Tags
+     * Sets the {@link #bookmarks} list as the list of the {@link #resultProperty}.
+     * Method is used after loading all Bookmarks from the Database, to show all Bookmarks in the @{@link search.SearchController}s Listview.
      */
-    public void addTags(Collection<? extends Tag> tags) {
-        this.tags.addAll(tags);
+    public static void refreshBookmarksResultsProperty() {
+        Bookmark.resultProperty.set(bookmarks);//after all Bookmarks are loaded, the property is updated the first time
+        filterStringProperty().set("");
     }
 
+    /**
+     * Used for adding a new Bookmark to the list of Bookmarks
+     *
+     * @param bookmark bookmark to add
+     */
+    public static void add(Bookmark bookmark) throws SQLException {
+        Manager.getDatabaseController().consumerWrapper(bookmark, Manager.getDatabaseController()::insert);
+        bookmarks.add(bookmark);
+    }
+
+    /**
+     * Returns the next ID to use.
+     *
+     * @return Next ID
+     */
+    public static int getNewID() {
+        return bookmarks.stream()
+                .mapToInt(Bookmark::getId)//map to all ID's
+                .max()//get the highest ID
+                .orElse(0) + 1;//add 1 to the highest id, if there is no ID at all, creates a new one from 0
+    }
+
+    /**
+     * When the Environment changes, all corresponding Bookmarks will be loaded into the {@link #bookmarks} list.
+     *
+     * @param observable observable
+     * @param oldValue   old value
+     * @param newValue   new Selected Environment
+     */
+    public static void changeEnvironment(ObservableValue<? extends Environment> observable, Environment oldValue, Environment newValue) {
+        try {
+            if (newValue == null) {
+                Manager.getDatabaseController().consumerWrapper(Manager.getDatabaseController()::readBookmarks);//read all Bookmarks
+            } else {
+                Manager.getDatabaseController().consumerWrapper(newValue, Manager.getDatabaseController()::readBookmarks);//read only the corresponding bookmarks
+            }
+        } catch (SQLException e) {
+            Manager.log(Level.SEVERE, "Failed to load Bookmarks from database", e);
+        }
+        //refresh the bookmarks
+        refreshBookmarksResultsProperty();
+    }
+
+
+    /**
+     * Delete the given Bookmark from the list and database
+     */
+    public static void deleteBookmark(Bookmark bookmark) throws SQLException {
+        bookmarks.remove(bookmark);//delete from the list
+        Manager.getDatabaseController().consumerWrapper(bookmark, Manager.getDatabaseController()::delete);//delete from the database
+        refreshBookmarksResultsProperty();
+    }
 
     /**
      * returns refernce of the object.
@@ -185,6 +257,39 @@ public class Bookmark {
      */
     private Bookmark getMe() {
         return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Bookmark)) return false;
+        Bookmark bookmark = (Bookmark) o;
+        if (getId() == bookmark.getId()) return true;
+        return Objects.equals(getDesc(), bookmark.getDesc()) &&
+                Objects.equals(getTitle(), bookmark.getTitle()) &&
+                Objects.equals(getUrl(), bookmark.getUrl()) &&
+                Objects.equals(getAdded(), bookmark.getAdded()) &&
+                Objects.equals(getEnvironment(), bookmark.getEnvironment()) &&
+                Objects.equals(getTags(), bookmark.getTags());
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(id, desc, title, url, added, environment, tags);
+    }
+
+    @Override
+    public String toString() {
+        return "Bookmark{" +
+                "id=" + id +
+                ", desc=" + desc +
+                ", title=" + title +
+                ", url=" + url +
+                ", added=" + added +
+                ", environment=" + environment +
+                ", tags=" + tags +
+                '}';
     }
 
     public String getUrl() {
@@ -292,78 +397,12 @@ public class Bookmark {
         this.environment.set(environment);
     }
 
-    @Override
-    public String toString() {
-        return "Bookmark{" +
-                "id=" + id +
-                ", desc=" + desc +
-                ", title=" + title +
-                ", url=" + url +
-                ", added=" + added +
-                ", environment=" + environment +
-                ", tags=" + tags +
-                '}';
-    }
-
     public static ObservableList<Bookmark> getResultProperty() {
         return resultProperty.get();
     }
 
     public static SimpleListProperty<Bookmark> resultPropertyProperty() {
         return resultProperty;
-    }
-
-
-    /**
-     * Sets the {@link #bookmarks} list as the list of the {@link #resultProperty}.
-     * Method is used after loading all Bookmarks from the Database, to show all Bookmarks in the @{@link search.SearchController}s Listview.
-     */
-    public static void refreshBookmarksResultsProperty() {
-        Bookmark.resultProperty.set(bookmarks);//after all Bookmarks are loaded, the property is updated the first time
-        filterStringProperty().set("");
-    }
-
-    /**
-     * Used for adding a new Bookmark to the list of Bookmarks
-     *
-     * @param bookmark bookmark to add
-     */
-    public static void add(Bookmark bookmark) throws SQLException {
-        Manager.getDatabaseController().consumerWrapper(bookmark, Manager.getDatabaseController()::insert);
-        bookmarks.add(bookmark);
-    }
-
-    /**
-     * Returns the next ID to use.
-     *
-     * @return Next ID
-     */
-    public static int getNewID() {
-        return bookmarks.stream()
-                .mapToInt(Bookmark::getId)//map to all ID's
-                .max()//get the highest ID
-                .orElse(0) + 1;//add 1 to the highest id, if there is no ID at all, creates a new one from 0
-    }
-
-    /**
-     * When the Environment changes, all corresponding Bookmarks will be loaded into the {@link #bookmarks} list.
-     *
-     * @param observable
-     * @param oldValue
-     * @param newValue   new Selected Environment
-     */
-    public static void changeEnvironment(ObservableValue<? extends Environment> observable, Environment oldValue, Environment newValue) {
-        try {
-            if (newValue == null) {
-                Manager.getDatabaseController().consumerWrapper(Manager.getDatabaseController()::readBookmarks);//read all Bookmarks
-            } else {
-                Manager.getDatabaseController().consumerWrapper(newValue, Manager.getDatabaseController()::readBookmarks);//read only the corresponding bookmarks
-            }
-        } catch (SQLException e) {
-            Manager.log(Level.SEVERE, "Failed to load Bookmarks from database", e);
-        }
-        //refresh the bookmarks
-        refreshBookmarksResultsProperty();
     }
 
     static {

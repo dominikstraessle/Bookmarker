@@ -4,7 +4,8 @@ package database;
 import java.sql.SQLException;
 
 /**
- * Database Consumer for Alter, Create, Insert and Delete
+ * Database Consumer for Alter, Create, Insert and Delete.
+ * Already specified, so no second parameter is needed.
  *
  * @param <S> Connection
  */

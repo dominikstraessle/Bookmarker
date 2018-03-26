@@ -13,6 +13,13 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import manage.Manager;
 
+/**
+ * The Datamodel for the Tag.
+ * Instance Methodes/Attributes hold the functionality of a single Tag.
+ * Class Methods/Attributes are utilitys and lists with all Tags.
+ *
+ * @author Dominik Strässle
+ */
 public class Tag {
     /**
      * Contains all Tags at runtime
@@ -37,43 +44,6 @@ public class Tag {
     public Tag(int id, String tagString) {
         this.id = new SimpleIntegerProperty(id);
         this.tagString = new SimpleStringProperty(tagString);
-    }
-
-    public String getTagString() {
-
-        return tagString.get();
-    }
-
-    public SimpleStringProperty tagStringProperty() {
-        return tagString;
-    }
-
-    public void setTagString(String tagString) {
-        this.tagString.set(tagString);
-    }
-
-    public int getId() {
-        return id.get();
-    }
-
-    public SimpleIntegerProperty idProperty() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id.set(id);
-    }
-
-    public static ObservableList<Tag> getTags() {
-        return tags;
-    }
-
-    @Override
-    public String toString() {
-        return "Tag{" +
-                "id=" + id +
-                ", tagString=" + tagString +
-                '}';
     }
 
 
@@ -123,6 +93,7 @@ public class Tag {
         if (this == o) return true;
         if (!(o instanceof Tag)) return false;
         Tag tag1 = (Tag) o;
+        if (getId() == tag1.getId()) return true;
         return Objects.equals(getTagString(), tag1.getTagString());//compares the strings of the properties
     }
 
@@ -142,5 +113,42 @@ public class Tag {
                 .mapToInt(Tag::getId)//map to all ID's
                 .max()//get the highest ID
                 .orElse(0) + 1;//add 1 to the highest id, if there is no ID at all, creates a new one from 0
+    }
+
+    @Override
+    public String toString() {
+        return "Tag{" +
+                "id=" + id +
+                ", tagString=" + tagString +
+                '}';
+    }
+
+    public String getTagString() {
+
+        return tagString.get();
+    }
+
+    public SimpleStringProperty tagStringProperty() {
+        return tagString;
+    }
+
+    public void setTagString(String tagString) {
+        this.tagString.set(tagString);
+    }
+
+    public int getId() {
+        return id.get();
+    }
+
+    public SimpleIntegerProperty idProperty() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id.set(id);
+    }
+
+    public static ObservableList<Tag> getTags() {
+        return tags;
     }
 }
