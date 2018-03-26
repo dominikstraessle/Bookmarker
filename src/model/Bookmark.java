@@ -45,8 +45,6 @@ public class Bookmark {
      * This is the actually selected Environment
      */
     private static SimpleObjectProperty<Environment> selectedEnvironment = new SimpleObjectProperty<>();
-
-
     /**
      * ID
      */
