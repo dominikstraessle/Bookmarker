@@ -28,6 +28,7 @@ import search.SearchController;
 /*TODO Tasks
 -X- tidy up every class
 -X- Add Environment Functionality in Search and Add-View
+- Platform.runLater(Runnable r); -> for the load data thread
 - Support all Buttons in the search view and environment delete etc
 - Implement the IOInterface class
 - Beautify the alertException
