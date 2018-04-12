@@ -9,6 +9,7 @@ import java.util.Comparator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 import javafx.beans.Observable;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -80,9 +81,11 @@ public class Bookmark {
     /**
      * All corresponding tags
      */
-//    private ObservableList<Tag> tags = FXCollections.observableArrayList();
-
     private SimpleListProperty<Tag> tags = new SimpleListProperty<>();
+    /**
+     * Always contains the tags as showable string
+     */
+    private SimpleStringProperty tagsAsString = new SimpleStringProperty();
 
     /**
      * Constuctor with all fields
@@ -132,8 +135,23 @@ public class Bookmark {
      */
     public void addTags(Collection<? extends Tag> tags) {
         //if the list is null create a new one -> lazy instantiation
-        if (this.tags.get() == null) this.tags.set(FXCollections.observableArrayList());
+        if (this.tags.get() == null) {
+            this.tags.set(FXCollections.observableArrayList());
+            this.tags.addListener((observable, oldValue, newValue) -> changeTagsAsString(newValue));
+        }
         this.tags.addAll(tags);
+    }
+
+    /**
+     * Changes the tagsAsString's value after a change at the tags
+     *
+     * @param newValue new Tags
+     */
+    private void changeTagsAsString(ObservableList<Tag> newValue) {
+        tagsAsString.setValue(newValue
+                .stream()//get all tags of a bookmark as stream
+                .map(Tag::getTagString)//only the text of the tags in the list
+                .collect(Collectors.joining(" ")));//collect to a string delimited by a blank);
     }
 
 
@@ -274,6 +292,7 @@ public class Bookmark {
         oldBookmark.setUrl(newBookmark.getUrl());
         oldBookmark.setModified(newBookmark.getModified());
         oldBookmark.setTags(newBookmark.getTags());
+        oldBookmark.setEnvironment(newBookmark.getEnvironment());
     }
 
     /**
@@ -434,6 +453,14 @@ public class Bookmark {
 
     public static SimpleListProperty<Bookmark> resultPropertyProperty() {
         return resultProperty;
+    }
+
+    public String getTagsAsString() {
+        return tagsAsString.get();
+    }
+
+    public SimpleStringProperty tagsAsStringProperty() {
+        return tagsAsString;
     }
 
     static {

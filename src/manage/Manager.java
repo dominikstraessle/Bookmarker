@@ -33,12 +33,13 @@ import search.SearchController;
 -X- Add Environment Functionality in Search and Add-View
 -X- Platform.runLater(Runnable r); -> for the load data thread
 -X- Support all Buttons in the search view and environment delete etc
-- Color Env support
+-X- Color Env support
+- Logger location fix
 - Beautify the alertException
 - LocalDateFormat... and change Added to -> Modified
 - Icons support
 - Threads to load / asynchronous loading/writing
-- Tidy up Controllers (to much id's)
+-X- Tidy up Controllers (to much id's)
  */
 
 /**
@@ -292,23 +293,6 @@ public class Manager extends Application {
         dialog.showAndWait();
     }
 
-    /*
-    Static constuctor for initializing the LOGGER.
-    */
-    static {
-        try {//Initialize the Logger to write into log files instead of the console
-            String date = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
-            FileHandler fileHandler = new FileHandler("C:\\Users\\stra5\\IdeaProjects\\Bookmarker\\res\\log\\logging_" + date + ".log", true);//handler for log file
-//            FileHandler fileHandler = new FileHandler("C:\\Users\\domin\\OneDrive - SBL\\4 Semester\\120  Benutzerschnittstellen implementieren\\Bookmarker\\res\\log\\logging_" + date + ".log", true);//handler for log file
-//            FileHandler fileHandler = new FileHandler("../res/logging_" + date + ".log", true);//handler for log file
-            LOGGER.addHandler(fileHandler);//add handler
-            fileHandler.setFormatter(new SimpleFormatter());//set Formatter
-            LOGGER.setUseParentHandlers(false);//no console output anymore
-            LOGGER.info("Logger initialized");//first message
-        } catch (IOException e) {
-            log(Level.SEVERE, "Error initializing the Filehandler for Logging", e);
-        }
-    }
 
     /**
      * Show the editBookmark dialog as dialog on the primary stage
@@ -342,5 +326,23 @@ public class Manager extends Application {
         dialog.initModality(Modality.WINDOW_MODAL);
         dialog.initOwner(this.primaryStage);
         dialog.showAndWait();
+    }
+
+    /*
+    Static constuctor for initializing the LOGGER.
+    */
+    static {
+        try {//Initialize the Logger to write into log files instead of the console
+            String date = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+//            FileHandler fileHandler = new FileHandler("C:\\Users\\stra5\\IdeaProjects\\Bookmarker\\res\\log\\logging_" + date + ".log", true);//handler for log file
+            FileHandler fileHandler = new FileHandler("C:\\Users\\domin\\OneDrive - SBL\\4 Semester\\120  Benutzerschnittstellen implementieren\\Bookmarker\\res\\log\\logging_" + date + ".log", true);//handler for log file
+//            FileHandler fileHandler = new FileHandler("../res/logging_" + date + ".log", true);//handler for log file
+            LOGGER.addHandler(fileHandler);//add handler
+            fileHandler.setFormatter(new SimpleFormatter());//set Formatter
+            LOGGER.setUseParentHandlers(false);//no console output anymore
+            LOGGER.info("Logger initialized");//first message
+        } catch (IOException e) {
+            log(Level.SEVERE, "Error initializing the Filehandler for Logging", e);
+        }
     }
 }

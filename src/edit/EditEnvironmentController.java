@@ -57,12 +57,6 @@ public class EditEnvironmentController {
                 //create a pseudo new environment with the changes but same id
                 Environment newEnvironment = new Environment(oldEnvironment.getId(), editTxtName.getText(), editTxtDesc.getText(), editClrColor.getValue());
 
-                //if there are no changes return
-//                if (newEnvironment.equals(oldEnvironment)) {
-//                    dialogStage.close();
-//                    return;
-//                }
-
                 //edit the oldenvironment
                 Environment.edit(oldEnvironment, newEnvironment);
             } catch (SQLException exception) {

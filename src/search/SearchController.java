@@ -8,27 +8,18 @@ import com.jfoenix.controls.JFXTextField;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ResourceBundle;
-import java.util.stream.Collectors;
 
 import javafx.application.HostServices;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.geometry.Insets;
-import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
-import javafx.scene.layout.CornerRadii;
-import javafx.scene.layout.VBox;
-import javafx.scene.paint.Paint;
 import manage.Manager;
 import model.Bookmark;
 import model.Environment;
-import model.Tag;
 
 public class SearchController {
 
@@ -195,14 +186,20 @@ public class SearchController {
 
     @FXML
     void handleEditEnvironment(ActionEvent event) {
-        if (null == searchComboEnv.getSelectionModel().getSelectedItem()) return;
+        if (null == searchComboEnv.getSelectionModel().getSelectedItem()) {
+            //show a warning
+            Manager.alertWarning(resources.getString("error"), resources.getString("error.11"), resources.getString("error.11"), manager.getPrimaryStage());
+            return;
+        }
         try {
             manager.showEditEnvironment(searchComboEnv.getSelectionModel().getSelectedItem());
-        } catch (IOException e) {
+        } catch (
+                IOException e) {
             Manager.alertException(resources.getString("error"), resources.getString("error.09"), manager.getPrimaryStage(), e);
         } finally {
             showBookmarkDetails(resultList.getSelectionModel().getSelectedItem());
         }
+
     }
 
 
@@ -226,10 +223,8 @@ public class SearchController {
             detailTxtAdded.textProperty().bind(bookmark.modifiedProperty().asString());
             detailTxtDesc.textProperty().bind(bookmark.descProperty());
             detailTxtEnv.textProperty().bind(bookmark.getEnvironment().nameProperty());
-            detailTxtTags.setText(bookmark.getTags().stream()//get all tags of a bookmark as stream
-                    .map(Tag::getTagString)//only the text of the tags in the list
-                    .collect(Collectors.joining(" ")));//collect to a string delimited by a blank
-            String googleFavIcon = "http://www.google.com/s2/favicons?domain_url=";//google api for loading favicon TODO: show favicon of url in the image/web view
+            detailTxtTags.textProperty().bind(bookmark.tagsAsStringProperty());
+//            String googleFavIcon = "http://www.google.com/s2/favicons?domain_url=";//google api for loading favicon TODO: show favicon of url in the image/web view
 
         } else {//the bookmark is a null reference, so set all detail labels to blank
             detailTxtTitle.textProperty().unbind();
@@ -275,9 +270,6 @@ public class SearchController {
         searchComboEnv.itemsProperty().bind(Environment.environmentsPropertyProperty());
         //When a new Environment is selected, then the search list will only be such elements, where the environment equals the selected environment
         Bookmark.currentEnvironmentProperty().bind(searchComboEnv.getSelectionModel().selectedItemProperty());
-
-        //the
-//        resultList.setPadding(new Insets(0,-5,0,-5));
     }
 
     /**
@@ -297,31 +289,8 @@ public class SearchController {
                     setGraphic(null);
                 } else {
                     //https://www.billmann.de/2013/07/03/javafx-custom-listcell/
-
-//                    Region color = new Region();
-//                    color.setPrefSize(5, 5);
-//                    color.setStyle("-fx-background-color: " + bookmark.getEnvironment().getColor());
-//                    color.setBackground(new Background(new BackgroundFill(Paint.valueOf(bookmark.getEnvironment().getColor().toString()))));
-
-                    setText(null);
-                    VBox vBox = new VBox();
-                    String bookmarkTitle = bookmark.getTitle();
-                    Label title = new Label(bookmarkTitle);
-                    //Make the title bold
-                    title.getStyleClass().add("bold_text");
-                    //Description String
-                    String bookmarkDesc = bookmark.getDesc();
-                    //if the String is longer than 70 then it will be shortened...
-                    //just an appereance nicety
-                    if (bookmarkDesc.length() > 70)
-                        bookmarkDesc = bookmarkDesc.substring(0, 70) + "...";
-                    Label desc = new Label(bookmarkDesc);
-                    vBox.getChildren().addAll(title, desc);
-
-                    vBox.setBackground(new Background(new BackgroundFill(Paint.valueOf(bookmark.getEnvironment().getColor().toString()), CornerRadii.EMPTY, new Insets(0))));
-                    vBox.setPadding(new Insets(5));
-
-                    setGraphic(vBox);
+                    //create new CellCard
+                    setGraphic(new CellCard(bookmark, list));
                 }
             }
         };
@@ -352,7 +321,7 @@ public class SearchController {
             }
         } else {
             //no environment selected
-            Manager.alertWarning(resources.getString("error.06"), resources.getString("error.06"), resources.getString("error.06"), manager.getPrimaryStage());
+            Manager.alertWarning(resources.getString("error"), resources.getString("error.11"), resources.getString("error.11"), manager.getPrimaryStage());
         }
     }
 }
