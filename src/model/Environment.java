@@ -116,7 +116,7 @@ public class Environment {
         if (this == o) return true;
         if (!(o instanceof Environment)) return false;
         Environment that = (Environment) o;
-        if (getId() == that.getId()) return true;
+//        if (getId() == that.getId()) return true;
         return Objects.equals(getName(), that.getName()) &&
                 Objects.equals(getDesc(), that.getDesc()) &&
                 Objects.equals(getColor(), that.getColor());
@@ -200,11 +200,11 @@ public class Environment {
      * @param newEnvironment the edited environment
      */
     public static void edit(Environment oldEnvironment, Environment newEnvironment) throws SQLException {
-        //TODO modify in db
-        //TODO modify in list
-        Manager.getDatabaseController().consumerWrapper(//TODO method (reference)));
-                //do the in memory changes
-                oldEnvironment.setName(newEnvironment.getName());
+        //modify in database
+        Manager.getDatabaseController().consumerWrapper(newEnvironment, Manager.getDatabaseController()::edit);
+
+        //do the in memory changes
+        oldEnvironment.setName(newEnvironment.getName());
         oldEnvironment.setDesc(newEnvironment.getDesc());
         oldEnvironment.setColor(newEnvironment.getColor());
     }

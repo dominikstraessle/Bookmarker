@@ -1,6 +1,5 @@
 package edit;
 
-import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXColorPicker;
 import com.jfoenix.controls.JFXTextArea;
 import com.jfoenix.controls.JFXTextField;
@@ -12,6 +11,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.stage.Stage;
 import manage.Manager;
+import model.Bookmark;
 import model.Environment;
 
 /**
@@ -30,47 +30,46 @@ public class EditEnvironmentController {
      * the environment without changes
      */
     private Environment oldEnvironment;
-    /**
-     * Environment with changes
-     */
-    private Environment newEnvironment;
 
     @FXML
-    private JFXTextField addTxtName;
+    private JFXTextField editTxtName;
     @FXML
     private ResourceBundle resources;
 
     @FXML
-    private JFXColorPicker addClrColor;
+    private JFXColorPicker editClrColor;
 
     @FXML
-    private JFXTextArea addTxtDesc;
-
-    @FXML
-    private JFXButton addBtnCancel;
-
-    @FXML
-    private JFXButton addBtnAdd;
+    private JFXTextArea editTxtDesc;
 
     /**
-     * Eventhandler for {@link #addBtnAdd}. When the Button is clicked, it checks if the fields are filled valid.
-     * Then it creates a new Environment with the given information.
-     * The new Environment will be added to the @{@link Environment#environments} List.
+     * When the Button is clicked, it checks if the fields are filled valid.
+     * Then it creates a new Environment with the changed values but the old id.
+     * The old Environment will be changed in the memory and database
      *
      * @param event Button clicked event.
      */
     @FXML
-    void handleAdd(ActionEvent event) {
+    void handleEdit(ActionEvent event) {
         if (checkFields()) {
 
             try {
-                newEnvironment = new Environment(oldEnvironment.getId(), addTxtName.getText(), addTxtDesc.getText(), addClrColor.getValue());
+                //create a pseudo new environment with the changes but same id
+                Environment newEnvironment = new Environment(oldEnvironment.getId(), editTxtName.getText(), editTxtDesc.getText(), editClrColor.getValue());
+
+                //if there are no changes return
+//                if (newEnvironment.equals(oldEnvironment)) {
+//                    dialogStage.close();
+//                    return;
+//                }
+
+                //edit the oldenvironment
                 Environment.edit(oldEnvironment, newEnvironment);
             } catch (SQLException exception) {
-                //failed to add a environment, IO with database failed
+                //failed to save a environment, IO with database failed
                 Manager.alertException(
                         resources.getString("error"),
-                        resources.getString("error.02"),
+                        resources.getString("error.10"),
                         this.dialogStage,
                         exception
                 );
@@ -85,6 +84,7 @@ public class EditEnvironmentController {
                     resources.getString("add.invalid.content"),
                     this.dialogStage);
         }
+        Bookmark.refreshBookmarksResultsProperty();
     }
 
 
@@ -94,9 +94,10 @@ public class EditEnvironmentController {
      * @return true if all required fiels are filled, else false.
      */
     private boolean checkFields() {
-        if (addTxtName.getText().equals("")) return false;//name
-        if (addTxtDesc.getText().equals("")) return false;//desc
-        if (addClrColor.getValue() == null) return false;//color
+        if (editTxtName.getText().equals("")) return false;//name
+        if (editTxtDesc.getText().equals("")) return false;//desc
+        if (editClrColor.getValue() == null) return false;//color
+        if (oldEnvironment == null) return false;//environment is null
         return true;//everything is valid
     }
 
@@ -113,6 +114,21 @@ public class EditEnvironmentController {
     @FXML
     public void initialize() {
 
+    }
+
+
+    /**
+     * Sets the oldEnvironment and fills all fields with the already existing values
+     *
+     * @param oldEnvironment environment to edit
+     */
+    public void setEnvironment(Environment oldEnvironment) {
+        this.oldEnvironment = oldEnvironment;
+
+        //set the old values
+        editTxtName.setText(oldEnvironment.getName());
+        editTxtDesc.setText(oldEnvironment.getDesc());
+        editClrColor.setValue(oldEnvironment.getColor());
     }
 
     /**

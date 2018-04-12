@@ -1,0 +1,14 @@
+INSERT INTO tag (idtag, tag) VALUES (1, 'java');
+INSERT INTO tag (idtag, tag) VALUES (6, 'javafx');
+INSERT INTO tag (idtag, tag) VALUES (9, 'property');
+INSERT INTO tag (idtag, tag) VALUES (11, 'string');
+INSERT INTO tag (idtag, tag) VALUES (21, 'ml');
+INSERT INTO tag (idtag, tag) VALUES (22, 'machine');
+INSERT INTO tag (idtag, tag) VALUES (23, 'learning');
+INSERT INTO tag (idtag, tag) VALUES (26, 'listview');
+INSERT INTO tag (idtag, tag) VALUES (28, 'binding');
+INSERT INTO tag (idtag, tag) VALUES (30, 'datapump');
+INSERT INTO tag (idtag, tag) VALUES (31, 'expdp');
+INSERT INTO tag (idtag, tag) VALUES (32, 'impdp');
+INSERT INTO tag (idtag, tag) VALUES (33, 'sql');
+INSERT INTO tag (idtag, tag) VALUES (36, 'modify');

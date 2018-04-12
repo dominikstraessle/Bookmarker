@@ -11,33 +11,33 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="300.0" prefWidth="500.0" spacing="10.0" xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="add.AddBookmarkController">
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="300.0" prefWidth="500.0" spacing="10.0" xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="edit.EditBookmarkController">
     <children>
         <Label text="%edit.bookmark">
             <font>
                 <Font size="24.0" />
             </font>
         </Label>
-        <JFXTextField fx:id="addTxtUrl" promptText="%url" />
-        <JFXTextField fx:id="addTxtTitle" promptText="%title" />
-        <JFXTextField fx:id="addTxtTags" promptText="%tags" />
+        <JFXTextField fx:id="editTxtUrl" promptText="%url" />
+        <JFXTextField fx:id="editTxtTitle" promptText="%title" />
+        <JFXTextField fx:id="editTxtTags" promptText="%tags" />
         <HBox spacing="10.0">
             <children>
-                <JFXComboBox fx:id="addComboEnv" promptText="%environment" />
-                <JFXButton fx:id="addBtnAddEnv" onAction="#handleAddEnv" styleClass="blue_light" text="%addenv" />
+                <JFXComboBox fx:id="editComboEnv" promptText="%environment" />
+                <JFXButton onAction="#handleAddEnv" styleClass="blue_light" text="%addenv" />
             </children>
         </HBox>
-        <JFXTextArea fx:id="addTxtDesc" promptText="%description" />
+        <JFXTextArea fx:id="editTxtDesc" promptText="%description" />
         <HBox alignment="BOTTOM_RIGHT" spacing="10.0">
             <children>
                 <Label fx:id="addLblAdded" />
                 <Region HBox.hgrow="ALWAYS" />
-                <JFXButton fx:id="addBtnCancel" cancelButton="true" onAction="#handleCancel" styleClass="blue_light" text="%cancel">
+                <JFXButton cancelButton="true" onAction="#handleCancel" styleClass="blue_light" text="%cancel">
                     <HBox.margin>
                         <Insets />
                     </HBox.margin>
                 </JFXButton>
-                <JFXButton fx:id="addBtnAdd" defaultButton="true" onAction="#handleAdd" styleClass="blue_dark" text="%save">
+                <JFXButton defaultButton="true" onAction="#handleEdit" styleClass="blue_dark" text="%save">
                     <HBox.margin>
                         <Insets />
                     </HBox.margin>

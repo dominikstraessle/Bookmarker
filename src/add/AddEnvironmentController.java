@@ -37,14 +37,8 @@ public class AddEnvironmentController {
     @FXML
     private JFXTextArea addTxtDesc;
 
-    @FXML
-    private JFXButton addBtnCancel;
-
-    @FXML
-    private JFXButton addBtnAdd;
-
     /**
-     * Eventhandler for {@link #addBtnAdd}. When the Button is clicked, it checks if the fields are filled valid.
+     * When the Button is clicked, it checks if the fields are filled valid.
      * Then it creates a new Environment with the given information.
      * The new Environment will be added to the @{@link Environment#environments} List.
      *

@@ -23,42 +23,30 @@
     <children>
         <MenuBar VBox.vgrow="NEVER">
             <menus>
-                <Menu mnemonicParsing="false" text="%file">
-                    <items>
-
-                    </items>
-                </Menu>
-                <Menu mnemonicParsing="false" text="%edit">
-               <items>
                   <Menu mnemonicParsing="false" text="%environment">
-                    <items>
-                      <MenuItem mnemonicParsing="false" text="%edit.environment" />
-                        <MenuItem fx:id="menuDeleteEnvironment" mnemonicParsing="false" onAction="#handleDeleteEnvironment" text="%delete.environment" />
-                    </items>
+                      <items>
+                          <MenuItem mnemonicParsing="false" onAction="#handleEditEnvironment" text="%edit.environment" />
+                          <MenuItem mnemonicParsing="false" onAction="#handleDeleteEnvironment" text="%delete.environment" />
+                  <MenuItem mnemonicParsing="false" onAction="#handleAddEnv" text="%add.environment" />
+                      </items>
                   </Menu>
                   <Menu mnemonicParsing="false" text="%bookmark">
-                    <items>
-                        <MenuItem mnemonicParsing="false" text="%edit.bookmark" />
-                        <MenuItem mnemonicParsing="false" onAction="#handleDelete" text="%delete.bookmark" />
-                    </items>
+                      <items>
+                          <MenuItem mnemonicParsing="false" onAction="#handleEditBookmark" text="%edit.bookmark" />
+                          <MenuItem mnemonicParsing="false" onAction="#handleDelete" text="%delete.bookmark" />
+                  <MenuItem mnemonicParsing="false" onAction="#handleAddBookmark" text="%add.bookmark" />
+                      </items>
                   </Menu>
-               </items>
-                </Menu>
-                <Menu mnemonicParsing="false" text="%help">
-                    <items>
-
-                    </items>
-                </Menu>
             </menus>
         </MenuBar>
         <HBox spacing="10.0" VBox.vgrow="NEVER">
             <children>
                 <JFXTextField fx:id="searchTxtKeyWords" prefColumnCount="25" promptText="%keywords" />
                 <JFXComboBox fx:id="searchComboEnv" promptText="%environment" />
-            <JFXButton fx:id="addBtnReset" onAction="#handleReset" styleClass="blue_light" text="%reset" />
+                <JFXButton onAction="#handleReset" styleClass="blue_light" text="%reset" />
                 <Region HBox.hgrow="ALWAYS" />
-                <JFXButton fx:id="addBtnAddBookmark" onAction="#handleAddBookmark" styleClass="blue_light" text="%add" HBox.hgrow="ALWAYS" />
-                <JFXButton fx:id="addBtnAddEnv" onAction="#handleAddEnv" styleClass="blue_light" text="%addenv" />
+                <JFXButton onAction="#handleAddBookmark" styleClass="blue_light" text="%add" HBox.hgrow="ALWAYS" />
+                <JFXButton onAction="#handleAddEnv" styleClass="blue_light" text="%addenv" />
             </children>
             <padding>
                 <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
@@ -112,7 +100,7 @@
                             </font>
                         </Label>
                         <JFXTextField fx:id="detailTxtTags" editable="false" />
-                        <Label text="%added">
+                        <Label text="%modified">
                             <VBox.margin>
                                 <Insets />
                             </VBox.margin>
@@ -132,13 +120,13 @@
                         <JFXTextField fx:id="detailTxtEnv" editable="false" />
                         <HBox alignment="CENTER" spacing="10.0" VBox.vgrow="ALWAYS">
                             <children>
-                                <JFXButton fx:id="detailBtnOpen" accessibleRole="HYPERLINK" onAction="#handleOpen" styleClass="blue_light" text="%openinbrowser" HBox.hgrow="ALWAYS" />
-                                <JFXButton fx:id="detailBtnCopy" onAction="#handleCopy" styleClass="blue_light" text="%copy" HBox.hgrow="ALWAYS" />
-                                <MenuButton fx:id="detailMenuOptions" mnemonicParsing="false" styleClass="blue_light" text="%options" HBox.hgrow="ALWAYS">
+                                <JFXButton accessibleRole="HYPERLINK" onAction="#handleOpen" styleClass="blue_light" text="%openinbrowser" HBox.hgrow="ALWAYS" />
+                                <JFXButton onAction="#handleCopy" styleClass="blue_light" text="%copy" HBox.hgrow="ALWAYS" />
+                                <MenuButton mnemonicParsing="false" styleClass="blue_light" text="%options" HBox.hgrow="ALWAYS">
                                     <items>
-                                        <MenuItem fx:id="detailMenuDelete" mnemonicParsing="false" onAction="#handleDelete" text="%delete" />
-                                        <MenuItem fx:id="detailMenuCitate" mnemonicParsing="false" onAction="#handleCitate" text="%citate" />
-                                        <MenuItem fx:id="detailMenuSave" mnemonicParsing="false" onAction="#handleSave" text="%save" />
+                                        <MenuItem  mnemonicParsing="false" onAction="#handleDelete" text="%delete" />
+                                        <MenuItem  mnemonicParsing="false" onAction="#handleCitate" text="%citate" />
+                                        <MenuItem  mnemonicParsing="false" onAction="#handleEditBookmark" text="%edit" />
                                     </items>
                                 </MenuButton>
                             </children>
@@ -153,17 +141,5 @@
                 </VBox>
             </items>
         </SplitPane>
-        <HBox id="HBox" alignment="CENTER_LEFT" spacing="5.0" VBox.vgrow="NEVER">
-            <children>
-                <Label fx:id="statusTxtSync" maxHeight="1.7976931348623157E308" maxWidth="-1.0" text="%notsync" HBox.hgrow="ALWAYS" />
-                <Region HBox.hgrow="ALWAYS" />
-                <Label fx:id="statusTxtServer" text="%server" />
-                <Region HBox.hgrow="ALWAYS" />
-                <Label fx:id="statusTxtModify" maxWidth="-1.0" text="%modified" HBox.hgrow="NEVER" />
-            </children>
-            <padding>
-                <Insets bottom="3.0" left="3.0" right="3.0" top="3.0" />
-            </padding>
-        </HBox>
     </children>
 </VBox>

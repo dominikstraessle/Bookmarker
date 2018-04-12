@@ -1,0 +1,3 @@
+INSERT INTO environment (idenvironment, name, description, color) VALUES (1, 'arbeit', 'Alle für die Arbeit relevanten Links.', '#4286f4');
+INSERT INTO environment (idenvironment, name, description, color) VALUES (2, 'privat', 'Links betreffend Hobby und Freizeit.', '#6be5a2');
+INSERT INTO environment (idenvironment, name, description, color) VALUES (3, 'schule', 'Wichtige Links für Projekte und Module', '#f48342');

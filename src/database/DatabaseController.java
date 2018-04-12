@@ -83,7 +83,7 @@ public class DatabaseController extends AbstractDatabaseController {
         statement.setInt(1, bookmark.getId());
         statement.setString(2, bookmark.getTitle());
         statement.setString(3, bookmark.getUrl());
-        statement.setDate(4, java.sql.Date.valueOf(bookmark.getAdded().toLocalDate()));
+        statement.setDate(4, java.sql.Date.valueOf(bookmark.getModified().toLocalDate()));
         statement.setString(5, bookmark.getDesc());
         statement.setInt(6, bookmark.getEnvironment().getId());
         //execute
@@ -116,87 +116,6 @@ public class DatabaseController extends AbstractDatabaseController {
                     exception);
         }
     }
-//    /**
-//     * Inserts a List of Environments into the database
-//     *
-//     * @param environments Environments to insert
-//     * @param connection   connection to Database
-//     * @throws SQLException Insert went wrong
-//     */
-//    public void insertEnvironments(List<Environment> environments, Connection connection) throws SQLException {
-//        StringBuilder insertString = new StringBuilder();
-//        String SQL = "INSERT INTO environment(name, description, color) VALUES(%s,%s,%s);\n";
-//        environments.forEach(environment -> {
-//            insertString.append(String.format(SQL,
-//                    environment.getName(),
-//                    environment.getDesc(),
-//                    environment.getColor()));
-//        });
-//        connection.createStatement().executeUpdate(insertString.toString());
-
-//    }
-
-//    /**
-//     * Insert a list of Bookmarks into the database
-//     *
-//     * @param bookmarks  List of Bookmarks
-//     * @param connection connection to Database
-//     * @throws SQLException Insert went wrong
-//     */
-//    public void insertBookmarks(List<Bookmark> bookmarks, Connection connection) throws SQLException {
-//        StringBuilder insertString = new StringBuilder();
-//        String SQL = "INSERT INTO bookmark(title, url, added, description, environment) VALUES(%s,%s,%s,%s,%s);\n";
-//        bookmarks.forEach(bookmark -> {
-//            insertString.append(String.format(SQL,
-//                    bookmark.getTitle(),
-//                    bookmark.getUrl(),
-//                    Date.from(bookmark.getAdded().atZone(ZoneId.systemDefault()).toInstant()).toString(),
-//                    bookmark.getDesc(),
-//                    bookmark.getEnvironment()));
-//        });
-//        connection.createStatement().executeUpdate(insertString.toString());
-//    }
-
-//    /**
-//     * Insert a list of Tags into the database.
-//     *
-//     * @param tags       List of Tags
-//     * @param connection Connection to the Database
-//     * @throws SQLException Insert went wrong
-//     */
-//    public void insertTags(List<Tag> tags, Connection connection) throws SQLException {
-//        StringBuilder insertString = new StringBuilder();
-//        String SQL = "INSERT INTO tag(tag) VALUES(?);\n";
-//        tags.forEach(tag -> insertString.append(SQL.replace("?", tag.getTagString())));
-//        connection.createStatement().executeUpdate(insertString.toString());
-//        //alternative would be: but then i need to handle a exception inside the lambda, own implementation is too much effort
-//        //tags.forEach(tag -> insert(tag, connection ));
-//    }
-
-//    /**
-//     * Selects all entries of a table
-//     *
-//     * @param table      Tablename
-//     * @param connection Connection to the Database
-//     * @return Results as ResultSet
-//     * @throws SQLException Select went wrong
-//     */
-//    public ResultSet selectAll(String table, Connection connection) throws SQLException {
-//        String SQL = "SELECT * FROM ?".replace("?", table);
-//        return connection.createStatement().executeQuery(SQL);
-//    }
-//
-//    /**
-//     * Executes select from a given sql.
-//     *
-//     * @param SQL        SQL with select
-//     * @param connection Connection to the Database
-//     * @return Results as ResultSet
-//     * @throws SQLException Select went wrong
-//     */
-//    public ResultSet selectOwnStatement(String SQL, Connection connection) throws SQLException {
-//        return connection.createStatement().executeQuery(SQL);
-//    }
 
     /**
      * Selects all @{@link Tag}s from the database into the @{@link Tag#tags} list.
@@ -289,7 +208,7 @@ public class DatabaseController extends AbstractDatabaseController {
     public void readBookmarks(Connection connection) throws SQLException {
         //Selects all from the table bookmark
         String SQL = "SELECT * FROM bookmark";
-        ResultSet set = connection.createStatement().executeQuery(SQL);
+//        connection.createStatement().executeQuery(SQL);
 
         //reads every row to initialize all bookmarks
         readAndSetBookmarks(SQL, connection);
@@ -312,9 +231,20 @@ public class DatabaseController extends AbstractDatabaseController {
     }
 
 
+    /**
+     * Read Bookmarks with a given SQL Query and adds the results to the @{@link Bookmark#bookmarks} list
+     *
+     * @param SQL        SQL Query for select
+     * @param connection connection to the database
+     * @throws SQLException select went wrong
+     */
     private void readAndSetBookmarks(String SQL, Connection connection) throws SQLException {
+        //execute query
         ResultSet set = connection.createStatement().executeQuery(SQL);
+        //clear the current list
         Bookmark.getBookmarks().clear();
+
+        //add all selected bookmarks to the list
         while (set.next()) {
             int id = set.getInt("idbookmark");
             String title = set.getString("title");
@@ -336,20 +266,40 @@ public class DatabaseController extends AbstractDatabaseController {
      *
      * @param bookmark   Bookmark to delete
      * @param connection connection to the database
-     * @throws SQLException Delete went wrong
      */
-    public void delete(Bookmark bookmark, Connection connection) throws SQLException {
-        String SQL = "DELETE FROM bookmark WHERE idbookmark = ?";
-        PreparedStatement statement = connection.prepareStatement(SQL);
-        //set parameters
-        statement.setInt(1, bookmark.getId());
-        statement.executeUpdate();
+    public void delete(Bookmark bookmark, Connection connection) {
+        try {
+            connection.setAutoCommit(false);
+            String SQL = "DELETE FROM bookmark WHERE idbookmark = ?";
+            PreparedStatement statement = connection.prepareStatement(SQL);
+            //set parameters
+            statement.setInt(1, bookmark.getId());
+            statement.executeUpdate();
 
-        SQL = "DELETE FROM bookmark_has_tag WHERE idbookmark = ?";
-        statement = connection.prepareStatement(SQL);
-        //set parameters
-        statement.setInt(1, bookmark.getId());
-        statement.executeUpdate();
+            SQL = "DELETE FROM bookmark_has_tag WHERE idbookmark = ?";
+            statement = connection.prepareStatement(SQL);
+
+            //set parameters
+            statement.setInt(1, bookmark.getId());
+            statement.executeUpdate();
+
+            clearTags(connection);
+
+            connection.commit();
+        } catch (SQLException exceptionCommit) {
+            try {
+                connection.rollback();
+            } catch (SQLException exceptionRollback) {
+                Manager.log(Level.SEVERE, "Rollback after failed transaction failed", exceptionRollback);
+            }
+            Manager.log(Level.SEVERE, "Delete environment transaction failed", exceptionCommit);
+        } finally {
+            try {
+                connection.setAutoCommit(true);
+            } catch (SQLException exceptionSetCommit) {
+                Manager.log(Level.SEVERE, "Set to autocommit true failed", exceptionSetCommit);
+            }
+        }
     }
 
     /**
@@ -370,12 +320,21 @@ public class DatabaseController extends AbstractDatabaseController {
             statement.setInt(1, environment.getId());
             statement.executeUpdate();
 
-            //from the bookmark table
-            SQL = "DELETE FROM bookmark WHERE environment = ?";
+            //delete all entries in bookmark_has_tag
+            SQL = "DELETE FROM bookmark_has_tag WHERE idbookmark IN (SELECT idbookmark FROM bookmark WHERE environment = ?)";
             statement = connection.prepareStatement(SQL);
-            //set parameters
             statement.setInt(1, environment.getId());
             statement.executeUpdate();
+
+            //delete all bookmarks
+            SQL = "DELETE FROM bookmark WHERE environment = ?";
+            statement = connection.prepareStatement(SQL);
+            statement.setInt(1, environment.getId());
+            statement.executeUpdate();
+
+            //clear unused tags
+            clearTags(connection);
+
             connection.commit();
         } catch (SQLException exceptionCommit) {
             try {
@@ -394,15 +353,97 @@ public class DatabaseController extends AbstractDatabaseController {
     }
 
     /**
+     * Delete all unused tags from the tag table
+     *
+     * @param connection connection to the database
+     */
+    private void clearTags(Connection connection) {
+        try {
+
+            //Delete all Tags which are not in use of any bookmark
+            String SQL = "DELETE FROM tag WHERE idtag IN (SELECT tag.idtag FROM tag AS tag LEFT JOIN bookmark_has_tag AS bht ON tag.idtag = bht.idtag WHERE bht.idtag IS NULL)";
+            connection.createStatement().executeUpdate(SQL);
+
+        } catch (SQLException sqlException) {
+            //delete failed
+            Manager.log(Level.SEVERE, "Failed to delete all unused tags", sqlException);
+        }
+    }
+
+    /**
      * Modify an environment in the database
      *
-     * @param oldEnvironment environment without changes
      * @param newEnvironment the edited environment
      */
-    public void edit(Environment oldEnvironment, Environment newEnvironment, Connection connection) throws SQLException {
-        //TODO edit in db
+    public void edit(Environment newEnvironment, Connection connection) throws SQLException {
+        String SQL = "UPDATE environment SET name = ?, description = ?, color = ? WHERE idenvironment = ?";
+        PreparedStatement statement = connection.prepareStatement(SQL);
+        //set all parameters
+        statement.setString(1, newEnvironment.getName());
+        statement.setString(2, newEnvironment.getDesc());
+        statement.setString(3, newEnvironment.getColor().toString());
+        statement.setInt(4, newEnvironment.getId());
+
+        //execute
+        statement.executeUpdate();
+
+    }
+
+    /**
+     * Update the existing bookmark with the new values.
+     *
+     * @param bookmark   bookmark with the new values but the old id
+     * @param connection connection to the database
+     */
+    public void edit(Bookmark bookmark, Connection connection) {
+        try {
+            //turn of autocommit
+            connection.setAutoCommit(false);
+
+            String SQL = "UPDATE bookmark SET title = ?, description = ?, url = ?, added = ?, environment = ? WHERE idbookmark = ?";
+            PreparedStatement statement = connection.prepareStatement(SQL);
+
+            //set the parameters
+            statement.setString(1, bookmark.getTitle());
+            statement.setString(2, bookmark.getDesc());
+            statement.setString(3, bookmark.getUrl());
+            statement.setDate(4, java.sql.Date.valueOf(bookmark.getModified().toLocalDate()));
+            statement.setInt(5, bookmark.getEnvironment().getId());
+            statement.setInt(6, bookmark.getId());
+
+            //execute
+            statement.executeUpdate();
+
+            //delete all bookmark_has_tag references
+            SQL = "DELETE FROM bookmark_has_tag WHERE idbookmark = ?";
+            statement = connection.prepareStatement(SQL);
+            statement.setInt(1, bookmark.getId());
+
+            //execute
+            statement.executeUpdate();
+
+            //insert tags
+            bookmark.getTags().forEach(tag -> insert(bookmark, tag, connection));
+
+            //clear all unused tags
+            clearTags(connection);
+
+            //commit the changes
+            connection.commit();
+        } catch (SQLException exceptionCommit) {
+            //the commit failed, so the changes will be rolled back
+            try {
+                connection.rollback();
+            } catch (SQLException exceptionRollback) {
+                Manager.log(Level.SEVERE, "Rollback after failed transaction failed", exceptionRollback);
+            }
+            Manager.log(Level.SEVERE, "Delete environment transaction failed", exceptionCommit);
+        } finally {
+            try {
+                connection.setAutoCommit(true);
+            } catch (SQLException exceptionSetCommit) {
+                Manager.log(Level.SEVERE, "Set to autocommit true failed", exceptionSetCommit);
+            }
+        }
     }
 }
-
-
-

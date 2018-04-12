@@ -81,7 +81,7 @@ public class Tag {
         try {
             Manager.getDatabaseController().consumerWrapper(tag, Manager.getDatabaseController()::insert);
         } catch (SQLException e) {
-            Manager.log(Level.SEVERE, "Failed to insert a Tag", e);//TODO error handling/logging
+            Manager.log(Level.SEVERE, "Failed to insert a Tag", e);
         }
         tags.add(tag);
         return tag;
@@ -117,10 +117,7 @@ public class Tag {
 
     @Override
     public String toString() {
-        return "Tag{" +
-                "id=" + id +
-                ", tagString=" + tagString +
-                '}';
+        return getTagString();
     }
 
     public String getTagString() {
@@ -128,20 +125,9 @@ public class Tag {
         return tagString.get();
     }
 
-    public SimpleStringProperty tagStringProperty() {
-        return tagString;
-    }
-
-    public void setTagString(String tagString) {
-        this.tagString.set(tagString);
-    }
 
     public int getId() {
         return id.get();
-    }
-
-    public SimpleIntegerProperty idProperty() {
-        return id;
     }
 
     public void setId(int id) {

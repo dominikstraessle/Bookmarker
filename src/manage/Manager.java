@@ -14,6 +14,8 @@ import java.util.logging.SimpleFormatter;
 import add.AddBookmarkController;
 import add.AddEnvironmentController;
 import database.DatabaseController;
+import edit.EditBookmarkController;
+import edit.EditEnvironmentController;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
@@ -30,11 +32,13 @@ import search.SearchController;
 -X- tidy up every class
 -X- Add Environment Functionality in Search and Add-View
 -X- Platform.runLater(Runnable r); -> for the load data thread
-- Support all Buttons in the search view and environment delete etc
+-X- Support all Buttons in the search view and environment delete etc
+- Color Env support
 - Beautify the alertException
 - LocalDateFormat... and change Added to -> Modified
 - Icons support
 - Threads to load / asynchronous loading/writing
+- Tidy up Controllers (to much id's)
  */
 
 /**
@@ -261,14 +265,41 @@ public class Manager extends Application {
         dialog.showAndWait();
     }
 
+
+    /**
+     * Shows the Dialog to edit a environment from the primary stage.
+     */
+    public void showEditEnvironment(Environment oldEnvironment) throws IOException {
+        showEditEnvironment(primaryStage, oldEnvironment);
+    }
+
+    /**
+     * Shows the Dialog to edit a environment with a custom stage
+     */
+    public void showEditEnvironment(Stage customStage, Environment oldEnvironment) throws IOException {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("../edit/editEnv.fxml"), resourceBundle);
+        Parent parent = loader.load();
+        parent.getStylesheets().add("stylesheets/style.css");
+        EditEnvironmentController controller = loader.getController();
+        Stage dialog = new Stage();
+        controller.setDialogStage(dialog);
+        controller.setEnvironment(oldEnvironment);
+        dialog.setTitle(resourceBundle.getString("edit"));
+        dialog.getIcons().add(new Image("images/brand.png"));
+        dialog.setScene(new Scene(parent));
+        dialog.initModality(Modality.WINDOW_MODAL);
+        dialog.initOwner(customStage);
+        dialog.showAndWait();
+    }
+
     /*
     Static constuctor for initializing the LOGGER.
     */
     static {
         try {//Initialize the Logger to write into log files instead of the console
             String date = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
-//            FileHandler fileHandler = new FileHandler("C:\\Users\\stra5\\IdeaProjects\\Bookmarker\\res\\log\\logging_" + date + ".log", true);//handler for log file
-            FileHandler fileHandler = new FileHandler("C:\\Users\\domin\\OneDrive - SBL\\4 Semester\\120  Benutzerschnittstellen implementieren\\Bookmarker\\res\\log\\logging_" + date + ".log", true);//handler for log file
+            FileHandler fileHandler = new FileHandler("C:\\Users\\stra5\\IdeaProjects\\Bookmarker\\res\\log\\logging_" + date + ".log", true);//handler for log file
+//            FileHandler fileHandler = new FileHandler("C:\\Users\\domin\\OneDrive - SBL\\4 Semester\\120  Benutzerschnittstellen implementieren\\Bookmarker\\res\\log\\logging_" + date + ".log", true);//handler for log file
 //            FileHandler fileHandler = new FileHandler("../res/logging_" + date + ".log", true);//handler for log file
             LOGGER.addHandler(fileHandler);//add handler
             fileHandler.setFormatter(new SimpleFormatter());//set Formatter
@@ -277,5 +308,39 @@ public class Manager extends Application {
         } catch (IOException e) {
             log(Level.SEVERE, "Error initializing the Filehandler for Logging", e);
         }
+    }
+
+    /**
+     * Show the editBookmark dialog as dialog on the primary stage
+     *
+     * @param oldBookmark selected bookmark
+     * @throws IOException cant load the fxml
+     */
+    public void showEditBookmark(Bookmark oldBookmark) throws IOException {
+        showEditBookmark(primaryStage, oldBookmark);
+    }
+
+    /**
+     * Show the editBookmark dialog on a given stage
+     *
+     * @param primaryStage Stage to use as owner
+     * @param oldBookmark  selected bookmark
+     * @throws IOException cant load the fxml
+     */
+    private void showEditBookmark(Stage primaryStage, Bookmark oldBookmark) throws IOException {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("../edit/editBookmark.fxml"), resourceBundle);
+        Parent parent = loader.load();
+        parent.getStylesheets().add("stylesheets/style.css");
+        EditBookmarkController controller = loader.getController();
+        Stage dialog = new Stage();
+        controller.setDialogStage(dialog);
+        controller.setManager(this);
+        controller.setBookmark(oldBookmark);
+        dialog.setTitle(resourceBundle.getString("edit"));
+        dialog.getIcons().add(new Image("images/brand.png"));
+        dialog.setScene(new Scene(parent));
+        dialog.initModality(Modality.WINDOW_MODAL);
+        dialog.initOwner(this.primaryStage);
+        dialog.showAndWait();
     }
 }

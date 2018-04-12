@@ -70,9 +70,9 @@ public class Bookmark {
      */
     private SimpleStringProperty url;
     /**
-     * Date and Time when the bookmark was added
+     * Date and Time when the bookmark was modified
      */
-    private SimpleObjectProperty<LocalDateTime> added;
+    private SimpleObjectProperty<LocalDateTime> modified;
     /**
      * The correspondig environment
      */
@@ -80,7 +80,9 @@ public class Bookmark {
     /**
      * All corresponding tags
      */
-    private ObservableList<Tag> tags = FXCollections.observableArrayList();
+//    private ObservableList<Tag> tags = FXCollections.observableArrayList();
+
+    private SimpleListProperty<Tag> tags = new SimpleListProperty<>();
 
     /**
      * Constuctor with all fields
@@ -89,18 +91,19 @@ public class Bookmark {
      * @param desc        Description
      * @param title       Title
      * @param url         Url
-     * @param added       Date and time when the bookmark was added
+     * @param modified    Date and time when the bookmark was modified
      * @param environment corresponding environment
      * @param tags        All corresponding tags
      */
-    public Bookmark(int id, String desc, String title, String url, LocalDateTime added, Environment environment, Collection<? extends Tag> tags) {
+    public Bookmark(int id, String desc, String title, String url, LocalDateTime modified, Environment environment, Collection<? extends Tag> tags) {
         this.id = new SimpleIntegerProperty(id);
         this.desc = new SimpleStringProperty(desc);
         this.title = new SimpleStringProperty(title);
         this.url = new SimpleStringProperty(url);
-        this.added = new SimpleObjectProperty<>(added);
+        this.modified = new SimpleObjectProperty<>(modified);
         this.environment = new SimpleObjectProperty<>(environment);
-        this.tags.addAll(tags);
+//        this.tags.addAll(tags);
+        this.tags = new SimpleListProperty<>(FXCollections.observableArrayList(tags));
     }
 
     /**
@@ -110,15 +113,15 @@ public class Bookmark {
      * @param desc        Description
      * @param title       Title
      * @param url         Url
-     * @param added       Date and time when the bookmark was added
+     * @param modified    Date and time when the bookmark was modified
      * @param environment corresponding environment
      */
-    public Bookmark(int id, String desc, String title, String url, LocalDateTime added, Environment environment) {
+    public Bookmark(int id, String desc, String title, String url, LocalDateTime modified, Environment environment) {
         this.id = new SimpleIntegerProperty(id);
         this.desc = new SimpleStringProperty(desc);
         this.title = new SimpleStringProperty(title);
         this.url = new SimpleStringProperty(url);
-        this.added = new SimpleObjectProperty<>(added);
+        this.modified = new SimpleObjectProperty<>(modified);
         this.environment = new SimpleObjectProperty<>(environment);
     }
 
@@ -128,6 +131,8 @@ public class Bookmark {
      * @param tags List of Tags
      */
     public void addTags(Collection<? extends Tag> tags) {
+        //if the list is null create a new one -> lazy instantiation
+        if (this.tags.get() == null) this.tags.set(FXCollections.observableArrayList());
         this.tags.addAll(tags);
     }
 
@@ -139,7 +144,6 @@ public class Bookmark {
      * @param observable observable
      */
     public static void filter(Observable observable) {
-//        if (getFilterString().length() > 100) return;//TODO: do i require this?
 
         //Creates a ArrayList with all search keywords -> they are splitted by a blank.
         //converts the string to lowercase before
@@ -248,6 +252,30 @@ public class Bookmark {
         refreshBookmarksResultsProperty();
     }
 
+
+    public void setUrl(String url) {
+        this.url.set(url);
+    }
+
+    /**
+     * Edit a given bookmark with the new values
+     *
+     * @param oldBookmark the one to edit
+     * @param newBookmark the one with the new values
+     * @throws SQLException Update went wrong
+     */
+    public static void edit(Bookmark oldBookmark, Bookmark newBookmark) throws SQLException {
+        //on the db side
+        Manager.getDatabaseController().consumerWrapper(newBookmark, Manager.getDatabaseController()::edit);
+
+        //set the new values
+        oldBookmark.setTitle(newBookmark.getTitle());
+        oldBookmark.setDesc(newBookmark.getDesc());
+        oldBookmark.setUrl(newBookmark.getUrl());
+        oldBookmark.setModified(newBookmark.getModified());
+        oldBookmark.setTags(newBookmark.getTags());
+    }
+
     /**
      * returns refernce of the object.
      *
@@ -256,6 +284,7 @@ public class Bookmark {
     private Bookmark getMe() {
         return this;
     }
+
 
     @Override
     public boolean equals(Object o) {
@@ -266,7 +295,7 @@ public class Bookmark {
         return Objects.equals(getDesc(), bookmark.getDesc()) &&
                 Objects.equals(getTitle(), bookmark.getTitle()) &&
                 Objects.equals(getUrl(), bookmark.getUrl()) &&
-                Objects.equals(getAdded(), bookmark.getAdded()) &&
+                Objects.equals(getModified(), bookmark.getModified()) &&
                 Objects.equals(getEnvironment(), bookmark.getEnvironment()) &&
                 Objects.equals(getTags(), bookmark.getTags());
     }
@@ -274,7 +303,7 @@ public class Bookmark {
     @Override
     public int hashCode() {
 
-        return Objects.hash(id, desc, title, url, added, environment, tags);
+        return Objects.hash(id, desc, title, url, modified, environment, tags);
     }
 
     @Override
@@ -284,7 +313,7 @@ public class Bookmark {
                 ", desc=" + desc +
                 ", title=" + title +
                 ", url=" + url +
-                ", added=" + added +
+                ", modified=" + modified +
                 ", environment=" + environment +
                 ", tags=" + tags +
                 '}';
@@ -322,8 +351,12 @@ public class Bookmark {
         return selectedEnvironment;
     }
 
+    public SimpleListProperty<Tag> tagsProperty() {
+        return tags;
+    }
+
     public void setTags(ObservableList<Tag> tags) {
-        this.tags = tags;
+        this.tags.set(tags);
     }
 
     public static ObservableList<Bookmark> getBookmarks() {
@@ -371,16 +404,16 @@ public class Bookmark {
     }
 
 
-    public LocalDateTime getAdded() {
-        return added.get();
+    public LocalDateTime getModified() {
+        return modified.get();
     }
 
-    public SimpleObjectProperty<LocalDateTime> addedProperty() {
-        return added;
+    public SimpleObjectProperty<LocalDateTime> modifiedProperty() {
+        return modified;
     }
 
-    public void setAdded(LocalDateTime added) {
-        this.added.set(added);
+    public void setModified(LocalDateTime modified) {
+        this.modified.set(modified);
     }
 
     public Environment getEnvironment() {
@@ -409,4 +442,6 @@ public class Bookmark {
         //When a new Environment is selected, then the search list will only be such elements, where the environment equals the selected environment
         currentEnvironmentProperty().addListener(Bookmark::changeEnvironment);
     }
+
+
 }

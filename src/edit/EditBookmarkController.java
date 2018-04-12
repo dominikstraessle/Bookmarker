@@ -1,6 +1,5 @@
 package edit;
 
-import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXComboBox;
 import com.jfoenix.controls.JFXTextArea;
 import com.jfoenix.controls.JFXTextField;
@@ -9,6 +8,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -35,66 +35,70 @@ public class EditBookmarkController {
      */
     private Stage dialogStage;
 
-    @FXML
-    public JFXButton addBtnAddEnv;
+    /**
+     * the old Bookmark without changes
+     */
+    private Bookmark oldBookmark;
 
     @FXML
     private ResourceBundle resources;
 
     @FXML
-    private JFXTextField addTxtUrl;
+    private JFXTextField editTxtUrl;
 
     @FXML
-    private JFXTextField addTxtTitle;
+    private JFXTextField editTxtTitle;
 
     @FXML
-    private JFXTextField addTxtTags;
+    private JFXTextField editTxtTags;
 
     @FXML
-    private JFXComboBox<Environment> addComboEnv;
+    private JFXComboBox<Environment> editComboEnv;
 
     @FXML
-    private JFXTextArea addTxtDesc;
+    private JFXTextArea editTxtDesc;
 
     @FXML
     private Label addLblAdded;
 
-    @FXML
-    private JFXButton addBtnCancel;
-
-    @FXML
-    private JFXButton addBtnAdd;
-
     /**
-     * Eventhandler for {@link #addBtnAdd}. When the Button is clicked, it checks if the information is valid.
-     * Then it creates a new Bookmark with the given information.
-     * For adding the correct references of @{@link Tag} to the bookmark it uses the Tag.add Method.
-     * Then the Bookmark will be added to the Bookmark list and the stage closed.
+     * When the Button is clicked, it checks if the information is valid.
+     * This will call the methods to set the changes to the edited bookmark
      *
      * @param event Button clicked event.
      */
     @FXML
-    void handleAdd(ActionEvent event) {
+    void handleEdit(ActionEvent event) {
+        //all fields are valid
         if (checkFields()) {
-            //all fields are valid
 
-            //create new Bookmark
-            Bookmark bookmark = new Bookmark(
-                    Bookmark.getNewID(),
-                    addTxtDesc.getText(),
-                    addTxtTitle.getText(),
-                    addTxtUrl.getText(),
+            //create new Bookmark with the existing id
+            Bookmark newBookmark = new Bookmark(
+                    oldBookmark.getId(),
+                    editTxtDesc.getText(),
+                    editTxtTitle.getText(),
+                    editTxtUrl.getText(),
                     LocalDateTime.now(),
-                    addComboEnv.getSelectionModel().getSelectedItem(),
-                    Tag.add(addTxtTags.getText()));
+                    editComboEnv.getSelectionModel().getSelectedItem(),
+                    Tag.add(editTxtTags.getText()));
+
+//            //if there are no changes return
+//            if (newBookmark.equals(oldBookmark)) {
+//                dialogStage.close();
+//                return;
+//            } else {
+//                //the Bookmarks gets the actual date, because it's modified
+//                newBookmark.setModified(LocalDateTime.now());
+//            }
+
             try {
-                //try to add the bookmark, the IO with the database can fail
-                Bookmark.add(bookmark);
+                //try to edit the oldBookmark, the IO with the database can fail
+                Bookmark.edit(oldBookmark, newBookmark);
             } catch (SQLException exception) {
                 //Show alert and Log
                 Manager.alertException(
                         resources.getString("error"),
-                        resources.getString("error.02"),
+                        resources.getString("error.11"),
                         this.dialogStage,
                         exception
                 );
@@ -119,11 +123,12 @@ public class EditBookmarkController {
      * @return true if all required fields are filled, else false.
      */
     private boolean checkFields() {
-        if (addTxtUrl.getText().equals("")) return false;//url
-        if (addTxtTitle.getText().equals("")) return false;//title
-        if (addTxtTags.getText().equals("")) return false;//tags
-        if (addTxtDesc.getText().equals("")) return false;//desc
-        if (addComboEnv.getSelectionModel().getSelectedItem() == null) return false;//env
+        if (editTxtUrl.getText().equals("")) return false;//url
+        if (editTxtTitle.getText().equals("")) return false;//title
+        if (editTxtTags.getText().equals("")) return false;//tags
+        if (editTxtDesc.getText().equals("")) return false;//desc
+        if (editComboEnv.getSelectionModel().getSelectedItem() == null) return false;//env
+        if (oldBookmark == null) return false;//old environment is null
         return true;//everything valid
     }
 
@@ -145,7 +150,7 @@ public class EditBookmarkController {
         //set the actual Date and Time to the added Label.
         addLblAdded.setText(LocalDateTime.now().toString());//Now
         //bind all Environments to the combobox
-        addComboEnv.itemsProperty().bind(Environment.environmentsPropertyProperty());
+        editComboEnv.itemsProperty().bind(Environment.environmentsPropertyProperty());
     }
 
 
@@ -184,5 +189,23 @@ public class EditBookmarkController {
                     manager.getPrimaryStage(),
                     exception);
         }
+    }
+
+    /**
+     * Set the selected bookmark which should be edited and fills all fields with the given values
+     *
+     * @param oldBookmark bookmark to edit
+     */
+    public void setBookmark(Bookmark oldBookmark) {
+        this.oldBookmark = oldBookmark;
+
+        //set the old values
+        editTxtTitle.setText(oldBookmark.getTitle());
+        editTxtDesc.setText(oldBookmark.getDesc());
+        editComboEnv.getSelectionModel().select(oldBookmark.getEnvironment());
+        editTxtTags.setText(oldBookmark.getTags().stream()//get all tags of a bookmark as stream
+                .map(Tag::getTagString)//only the text of the tags in the list
+                .collect(Collectors.joining(" ")));//collect to a string delimited by a blank
+        editTxtUrl.setText(oldBookmark.getUrl());
     }
 }

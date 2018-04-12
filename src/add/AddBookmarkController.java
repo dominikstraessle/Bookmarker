@@ -1,6 +1,5 @@
 package add;
 
-import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXComboBox;
 import com.jfoenix.controls.JFXTextArea;
 import com.jfoenix.controls.JFXTextField;
@@ -36,9 +35,6 @@ public class AddBookmarkController {
     private Stage dialogStage;
 
     @FXML
-    public JFXButton addBtnAddEnv;
-
-    @FXML
     private ResourceBundle resources;
 
     @FXML
@@ -59,14 +55,8 @@ public class AddBookmarkController {
     @FXML
     private Label addLblAdded;
 
-    @FXML
-    private JFXButton addBtnCancel;
-
-    @FXML
-    private JFXButton addBtnAdd;
-
     /**
-     * Eventhandler for {@link #addBtnAdd}. When the Button is clicked, it checks if the information is valid.
+     * When the Button is clicked, it checks if the information is valid.
      * Then it creates a new Bookmark with the given information.
      * For adding the correct references of @{@link Tag} to the bookmark it uses the Tag.add Method.
      * Then the Bookmark will be added to the Bookmark list and the stage closed.
@@ -128,7 +118,7 @@ public class AddBookmarkController {
     }
 
     /**
-     * {@link #addBtnCancel} is pressed
+     * Cancel is pressed
      *
      * @param event
      */
@@ -168,7 +158,7 @@ public class AddBookmarkController {
     }
 
     /**
-     * Handles the {@link #addBtnAddEnv} Button
+     * Handles the addenv Button
      *
      * @param actionEvent
      */
