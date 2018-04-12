@@ -15,6 +15,7 @@ import add.AddBookmarkController;
 import add.AddEnvironmentController;
 import database.DatabaseController;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -28,15 +29,12 @@ import search.SearchController;
 /*TODO Tasks
 -X- tidy up every class
 -X- Add Environment Functionality in Search and Add-View
-- Platform.runLater(Runnable r); -> for the load data thread
+-X- Platform.runLater(Runnable r); -> for the load data thread
 - Support all Buttons in the search view and environment delete etc
-- Implement the IOInterface class
 - Beautify the alertException
 - LocalDateFormat... and change Added to -> Modified
 - Icons support
-- jOOQ
 - Threads to load / asynchronous loading/writing
-//TODO: https://github.com/jOOQ/jOOQ
  */
 
 /**
@@ -75,7 +73,8 @@ public class Manager extends Application {
     public void start(Stage primaryStage) throws Exception {
         this.primaryStage = primaryStage;
         //this will load the data from the database in a new Thread
-        new Thread(Manager::loadData).start();
+//        new Thread(Manager::loadData).start();
+        Platform.runLater(Manager::loadData);
         //load and show the search view
         showSearch();
     }
@@ -268,7 +267,9 @@ public class Manager extends Application {
     static {
         try {//Initialize the Logger to write into log files instead of the console
             String date = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
-            FileHandler fileHandler = new FileHandler("C:\\Users\\stra5\\IdeaProjects\\Bookmarker\\res\\log\\logging_" + date + ".log", true);//handler for log file
+//            FileHandler fileHandler = new FileHandler("C:\\Users\\stra5\\IdeaProjects\\Bookmarker\\res\\log\\logging_" + date + ".log", true);//handler for log file
+            FileHandler fileHandler = new FileHandler("C:\\Users\\domin\\OneDrive - SBL\\4 Semester\\120  Benutzerschnittstellen implementieren\\Bookmarker\\res\\log\\logging_" + date + ".log", true);//handler for log file
+//            FileHandler fileHandler = new FileHandler("../res/logging_" + date + ".log", true);//handler for log file
             LOGGER.addHandler(fileHandler);//add handler
             fileHandler.setFormatter(new SimpleFormatter());//set Formatter
             LOGGER.setUseParentHandlers(false);//no console output anymore

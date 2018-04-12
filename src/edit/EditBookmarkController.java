@@ -1,4 +1,4 @@
-package add;
+package edit;
 
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXComboBox;
@@ -24,7 +24,7 @@ import model.Tag;
  *
  * @author Dominik Strässle
  */
-public class AddBookmarkController {
+public class EditBookmarkController {
 
     /**
      * Reference to the Manager that initialized the controller

@@ -1,0 +1,126 @@
+package edit;
+
+import com.jfoenix.controls.JFXButton;
+import com.jfoenix.controls.JFXColorPicker;
+import com.jfoenix.controls.JFXTextArea;
+import com.jfoenix.controls.JFXTextField;
+
+import java.sql.SQLException;
+import java.util.ResourceBundle;
+
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.stage.Stage;
+import manage.Manager;
+import model.Environment;
+
+/**
+ * Controller of the addEnvironment.fxml
+ *
+ * @author Dominik Strässle
+ */
+public class EditEnvironmentController {
+
+    /**
+     * Stage
+     */
+    private Stage dialogStage;
+
+    /**
+     * the environment without changes
+     */
+    private Environment oldEnvironment;
+    /**
+     * Environment with changes
+     */
+    private Environment newEnvironment;
+
+    @FXML
+    private JFXTextField addTxtName;
+    @FXML
+    private ResourceBundle resources;
+
+    @FXML
+    private JFXColorPicker addClrColor;
+
+    @FXML
+    private JFXTextArea addTxtDesc;
+
+    @FXML
+    private JFXButton addBtnCancel;
+
+    @FXML
+    private JFXButton addBtnAdd;
+
+    /**
+     * Eventhandler for {@link #addBtnAdd}. When the Button is clicked, it checks if the fields are filled valid.
+     * Then it creates a new Environment with the given information.
+     * The new Environment will be added to the @{@link Environment#environments} List.
+     *
+     * @param event Button clicked event.
+     */
+    @FXML
+    void handleAdd(ActionEvent event) {
+        if (checkFields()) {
+
+            try {
+                newEnvironment = new Environment(oldEnvironment.getId(), addTxtName.getText(), addTxtDesc.getText(), addClrColor.getValue());
+                Environment.edit(oldEnvironment, newEnvironment);
+            } catch (SQLException exception) {
+                //failed to add a environment, IO with database failed
+                Manager.alertException(
+                        resources.getString("error"),
+                        resources.getString("error.02"),
+                        this.dialogStage,
+                        exception
+                );
+            }
+            //close the stage
+            dialogStage.close();
+        } else {
+            //fields are not filled valid
+            Manager.alertWarning(
+                    resources.getString("add.invalid"),
+                    resources.getString("add.invalid"),
+                    resources.getString("add.invalid.content"),
+                    this.dialogStage);
+        }
+    }
+
+
+    /**
+     * Checks if all required fields are filled.
+     *
+     * @return true if all required fiels are filled, else false.
+     */
+    private boolean checkFields() {
+        if (addTxtName.getText().equals("")) return false;//name
+        if (addTxtDesc.getText().equals("")) return false;//desc
+        if (addClrColor.getValue() == null) return false;//color
+        return true;//everything is valid
+    }
+
+    /**
+     * Close the stage
+     *
+     * @param event cancel button clicked
+     */
+    @FXML
+    void handleCancel(ActionEvent event) {
+        dialogStage.close();
+    }
+
+    @FXML
+    public void initialize() {
+
+    }
+
+    /**
+     * the current {@link #dialogStage} can be set
+     *
+     * @param dialogStage given Stage
+     */
+    public void setDialogStage(Stage dialogStage) {
+        this.dialogStage = dialogStage;
+    }
+}

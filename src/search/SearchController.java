@@ -24,7 +24,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.VBox;
-import javafx.scene.web.WebView;
 import manage.Manager;
 import model.Bookmark;
 import model.Environment;
@@ -92,9 +91,6 @@ public class SearchController {
 
     @FXML
     private JFXTextArea detailTxtDesc;
-
-    @FXML
-    private WebView detailWebImage;
 
     @FXML
     private JFXButton detailBtnOpen;
@@ -300,7 +296,6 @@ public class SearchController {
                     if (bookmarkDesc.length() > 70)
                         bookmarkDesc = bookmarkDesc.substring(0, 70) + "...";
                     Label desc = new Label(bookmarkDesc);
-
                     vBox.getChildren().addAll(title, desc);
                     setGraphic(vBox);
                 }

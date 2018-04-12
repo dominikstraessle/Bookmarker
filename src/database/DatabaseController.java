@@ -392,6 +392,16 @@ public class DatabaseController extends AbstractDatabaseController {
             }
         }
     }
+
+    /**
+     * Modify an environment in the database
+     *
+     * @param oldEnvironment environment without changes
+     * @param newEnvironment the edited environment
+     */
+    public void edit(Environment oldEnvironment, Environment newEnvironment, Connection connection) throws SQLException {
+        //TODO edit in db
+    }
 }
 
 

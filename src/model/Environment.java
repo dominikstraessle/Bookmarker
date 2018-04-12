@@ -185,7 +185,27 @@ public class Environment {
         return color.get();
     }
 
+    public void setColor(Color color) {
+        this.color.set(color);
+    }
+
     public ObjectProperty<Color> colorProperty() {
         return color;
+    }
+
+    /**
+     * Handles the edit of a Environment
+     *
+     * @param oldEnvironment the environment without changes
+     * @param newEnvironment the edited environment
+     */
+    public static void edit(Environment oldEnvironment, Environment newEnvironment) throws SQLException {
+        //TODO modify in db
+        //TODO modify in list
+        Manager.getDatabaseController().consumerWrapper(//TODO method (reference)));
+                //do the in memory changes
+                oldEnvironment.setName(newEnvironment.getName());
+        oldEnvironment.setDesc(newEnvironment.getDesc());
+        oldEnvironment.setColor(newEnvironment.getColor());
     }
 }
