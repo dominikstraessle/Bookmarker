@@ -268,6 +268,7 @@ public class SearchController {
                 .addListener((observable, oldValue, newValue) -> showBookmarkDetails(newValue));//show the details of the selected item.
         //binds the environments to the searchComboBox
         searchComboEnv.itemsProperty().bind(Environment.environmentsPropertyProperty());
+
         //When a new Environment is selected, then the search list will only be such elements, where the environment equals the selected environment
         Bookmark.currentEnvironmentProperty().bind(searchComboEnv.getSelectionModel().selectedItemProperty());
     }

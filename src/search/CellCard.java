@@ -68,12 +68,12 @@ public class CellCard extends HBox {
         textVBox.getChildren().addAll(titleLabel, descLabel);
         this.getChildren().addAll(colorRegion, textVBox);
 
-        //bind the list's width to the cellcard's width
-        this.prefWidthProperty().bind(listView.widthProperty().subtract(2));
-        this.setMaxWidth(Control.USE_PREF_SIZE);
-
         //set spacing for a space between rectangle and labels
         this.setSpacing(5);
+
+        //bind the list's width to the cellcard's width
+        this.prefWidthProperty().bind(listView.widthProperty().subtract(17));
+        this.setMaxWidth(Control.USE_PREF_SIZE);
 
         //when the environment changes, also the color binding should change
         environmentProperty.bind(bookmark.environmentProperty());

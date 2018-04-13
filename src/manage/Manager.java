@@ -1,5 +1,6 @@
 package manage;
 
+import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
@@ -34,7 +35,7 @@ import search.SearchController;
 -X- Platform.runLater(Runnable r); -> for the load data thread
 -X- Support all Buttons in the search view and environment delete etc
 -X- Color Env support
-- Logger location fix
+-X- Logger location fix
 - Beautify the alertException
 - LocalDateFormat... and change Added to -> Modified
 - Icons support
@@ -334,9 +335,12 @@ public class Manager extends Application {
     static {
         try {//Initialize the Logger to write into log files instead of the console
             String date = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
-//            FileHandler fileHandler = new FileHandler("C:\\Users\\stra5\\IdeaProjects\\Bookmarker\\res\\log\\logging_" + date + ".log", true);//handler for log file
-            FileHandler fileHandler = new FileHandler("C:\\Users\\domin\\OneDrive - SBL\\4 Semester\\120  Benutzerschnittstellen implementieren\\Bookmarker\\res\\log\\logging_" + date + ".log", true);//handler for log file
-//            FileHandler fileHandler = new FileHandler("../res/logging_" + date + ".log", true);//handler for log file
+
+            File file = new File(Manager.class.getClassLoader().getResource("log/log").getFile().substring(1) + "ging_" + date + ".log");//create a file for each day
+            file.getParentFile().mkdirs();//create parent dir if they do not exist
+            file.createNewFile();
+            FileHandler fileHandler = new FileHandler(file.getAbsolutePath(), true);
+
             LOGGER.addHandler(fileHandler);//add handler
             fileHandler.setFormatter(new SimpleFormatter());//set Formatter
             LOGGER.setUseParentHandlers(false);//no console output anymore
