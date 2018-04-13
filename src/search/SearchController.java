@@ -10,13 +10,20 @@ import java.sql.SQLException;
 import java.util.ResourceBundle;
 
 import javafx.application.HostServices;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.CornerRadii;
+import javafx.scene.layout.Region;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import manage.Manager;
 import model.Bookmark;
 import model.Environment;
@@ -42,7 +49,7 @@ public class SearchController {
     private JFXListView<Bookmark> resultList;
 
     @FXML
-    private ImageView detailImageIcon;
+    private Region detailRegionIcon;
 
     @FXML
     private JFXTextField detailTxtTitle;
@@ -226,6 +233,24 @@ public class SearchController {
             detailTxtTags.textProperty().bind(bookmark.tagsAsStringProperty());
 //            String googleFavIcon = "http://www.google.com/s2/favicons?domain_url=";//google api for loading favicon TODO: show favicon of url in the image/web view
 
+            //A Property that contains the actual color of the environment.
+            //bind the colorProperty and set the color
+            SimpleObjectProperty<Color> color = new SimpleObjectProperty<>();
+            color.bind(bookmark.environmentProperty().get().colorProperty());
+            color.addListener((observable, oldValue, newValue) -> {
+                detailRegionIcon.setBackground(new Background(
+                        new BackgroundFill(
+                                Paint.valueOf(newValue.toString()),
+                                new CornerRadii(3),
+                                new Insets(0))));
+            });
+            //set the color on the first show
+            detailRegionIcon.setBackground(new Background(
+                    new BackgroundFill(
+                            Paint.valueOf(bookmark.getEnvironment().getColor().toString()),
+                            new CornerRadii(3),
+                            new Insets(0))));
+
         } else {//the bookmark is a null reference, so set all detail labels to blank
             detailTxtTitle.textProperty().unbind();
             detailTxtTitle.setText("");
@@ -244,6 +269,13 @@ public class SearchController {
 
             detailTxtTags.textProperty().unbind();
             detailTxtTags.setText("");
+
+            //set background to nothing
+            detailRegionIcon.setBackground(new Background(
+                    new BackgroundFill(
+                            Paint.valueOf(Color.TRANSPARENT.toString()),
+                            new CornerRadii(3),
+                            new Insets(0))));
         }
     }
 

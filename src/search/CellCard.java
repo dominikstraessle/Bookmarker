@@ -14,7 +14,6 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import model.Bookmark;
-import model.Environment;
 
 /**
  * A custom Cell Card for the @{@link SearchController#resultList}.
@@ -30,12 +29,6 @@ public class CellCard extends HBox {
      */
     private Region colorRegion;
 
-    /**
-     * A Property that contains the actual color of the environment.
-     */
-    private SimpleObjectProperty<Color> colorProperty = new SimpleObjectProperty<>();
-
-    private SimpleObjectProperty<Environment> environmentProperty = new SimpleObjectProperty<>();
 
     /**
      * Creates a CellCard with a given Bookmark.
@@ -59,9 +52,11 @@ public class CellCard extends HBox {
         colorRegion.setPrefWidth(10);
         colorRegion.setMinWidth(Control.USE_PREF_SIZE);
 
+        //A Property that contains the actual color of the environment.
         //bind the colorProperty and set the color
-        this.colorProperty.bind(bookmark.getEnvironment().colorProperty());
-        this.colorProperty.addListener((observable, oldValue, newValue) -> changeColor(newValue));
+        SimpleObjectProperty<Color> colorProperty = new SimpleObjectProperty<>();
+        colorProperty.bind(bookmark.environmentProperty().get().colorProperty());
+        colorProperty.addListener((observable, oldValue, newValue) -> changeColor(newValue));
         changeColor(bookmark.getEnvironment().getColor());
 
         //add labels to vbox
@@ -75,19 +70,6 @@ public class CellCard extends HBox {
         this.prefWidthProperty().bind(listView.widthProperty().subtract(17));
         this.setMaxWidth(Control.USE_PREF_SIZE);
 
-        //when the environment changes, also the color binding should change
-        environmentProperty.bind(bookmark.environmentProperty());
-        environmentProperty.addListener((observable, oldValue, newValue) -> rebindColorProperty(newValue));
-    }
-
-    /**
-     * Changes the binding to the color when the environment of a bookmarks changed
-     *
-     * @param newValue new Environment
-     */
-    private void rebindColorProperty(Environment newValue) {
-        this.colorProperty.unbind();
-        this.colorProperty.bind(environmentProperty.get().colorProperty());
     }
 
     /**
