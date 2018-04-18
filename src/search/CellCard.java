@@ -28,6 +28,10 @@ public class CellCard extends HBox {
      * A Colored Rectangle. Shows the color of the Bookmarks environment
      */
     private Region colorRegion;
+    /**
+     * A Property that contains the actual color of the environment.
+     */
+    SimpleObjectProperty<Color> colorProperty = new SimpleObjectProperty<>();
 
 
     /**
@@ -52,9 +56,7 @@ public class CellCard extends HBox {
         colorRegion.setPrefWidth(10);
         colorRegion.setMinWidth(Control.USE_PREF_SIZE);
 
-        //A Property that contains the actual color of the environment.
         //bind the colorProperty and set the color
-        SimpleObjectProperty<Color> colorProperty = new SimpleObjectProperty<>();
         colorProperty.bind(bookmark.environmentProperty().get().colorProperty());
         colorProperty.addListener((observable, oldValue, newValue) -> changeColor(newValue));
         changeColor(bookmark.getEnvironment().getColor());
