@@ -1,5 +1,5 @@
 # Bookmarker
-Intelligent bookmark storing.
+Bookmark storing.
 
 ## See also
 * [JFoenix](http://www.jfoenix.com/)
